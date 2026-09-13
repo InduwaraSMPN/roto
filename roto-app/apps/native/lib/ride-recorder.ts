@@ -18,7 +18,7 @@ export function haversineKm(a: [number, number][], b: { latitude: number; longit
   return 2 * R * Math.asin(Math.sqrt(s));
 }
 
-export function useRideRecorder(onCrash: () => void) {
+export function useRideRecorder(onCrash: () => void, onLocation?: (lon: number, lat: number) => void) {
   const [recording, setRecording] = useState(false);
   const [km, setKm] = useState(0);
   const coords = useRef<[number, number][]>([]);
@@ -36,6 +36,7 @@ export function useRideRecorder(onCrash: () => void) {
       (loc) => {
         setKm((k) => k + haversineKm(coords.current, loc.coords));
         coords.current.push([loc.coords.longitude, loc.coords.latitude]);
+        onLocation?.(loc.coords.longitude, loc.coords.latitude);
       },
     );
     setRecording(true);

@@ -35,6 +35,8 @@ Goal: free, open-source, offline-first motorcycle app for Sri Lanka. Speed + UI/
 2. Routing: `packages/api/src/lib/routing.ts` — Valhalla self-host LIVE (:8002, 129MB LK tiles, polyline6 decoded) > BRouter public trekking (verified live) > OSRM demo; dead/missing Valhalla falls through (verified: bogus URL → brouter). `VALHALLA_URL` set locally, absent in prod by design. Curvy weighting + circle-bearings round-trip, tRPC `route.plan/roundTrip`, native GPX builder
 3. Data: `packages/db/src/schema/rides.ts` (rides/pois/sos_contacts) + `migrations/0002_postgis.sql`, tRPC `rides.*`, native `lib/ride-queue.ts` (expo-sqlite pending_rides)
 4. Safety/i18n/POI: `lib/safety.ts` (4g watch, SMS→119 fallback, 1990), `lib/i18n.ts` (en/si/ta + si-LK/ta-LK voice), `packages/db/src/seed/pois.lk.ts` (10 seeds)
+5. Groups (polling v1, 5s): `ride_groups`/`group_members`/`live_positions` tables, tRPC `groups.*` (create/code/join/positions), Ride-tab SHARE/JOIN + blue member dots. Proven: 2 users → code → join → both visible. Positions in-DB (multi-instance safe); SSE only if polling measurably lags.
+6. Prod: `vercel.json` split (web :3001→/, server→/api), `DEPLOY.md` env map, web+server builds green, `VALHALLA_URL` unset-by-design in prod.
 
 ## Next
 

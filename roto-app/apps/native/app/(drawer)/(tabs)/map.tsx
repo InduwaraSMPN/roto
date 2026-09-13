@@ -1,7 +1,8 @@
 import { Camera, GeoJSONSource, Layer } from "@maplibre/maplibre-react-native";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
 
 import { MotoMap } from "@/components/moto-map";
 import { speak, type Lang } from "@/lib/i18n";
@@ -20,13 +21,39 @@ export default function RideMap() {
   const { data: session } = authClient.useSession();
   const sosQuery = useQuery({ ...trpc.rides.sosList.queryOptions(), enabled: !!session?.user });
   const createRide = useMutation(trpc.rides.create.mutationOptions());
+  const createGroup = useMutation(trpc.groups.create.mutationOptions());
+  const joinGroup = useMutation(trpc.groups.join.mutationOptions());
+  const pushPosition = useMutation(trpc.groups.updatePosition.mutationOptions());
+  const [groupId, setGroupId] = useState<string | null>(null);
+  const [groupCode, setGroupCode] = useState<string | null>(null);
+  const [joinCode, setJoinCode] = useState("");
+  const sharing = !!groupId && !!session?.user;
+  const membersQuery = useQuery({
+    ...trpc.groups.members.queryOptions({ groupId: groupId ?? "" }),
+    enabled: sharing,
+    refetchInterval: sharing ? 5000 : false,
+  });
 
   const crash = () => {
     speak(lang, "crash");
     const phones = (sosQuery.data ?? []).map((c) => c.phone);
     void sosAlert(phones, "Roto SOS: rider may have crashed. Last location shared in app.");
   };
-  const { recording, km, start, stop, online } = useRideRecorder(crash);
+  const { recording, km, start, stop, online } = useRideRecorder(crash, (lon, lat) => {
+    if (groupId) pushPosition.mutate({ groupId, lon, lat });
+  });
+
+  const share = async () => {
+    if (groupId) {
+      setGroupId(null);
+      return;
+    }
+    const g = await createGroup.mutateAsync({ name: `Ride ${new Date().toLocaleDateString()}` }).catch(() => null);
+    if (g) {
+      setGroupId(g.id);
+      setGroupCode(g.code);
+    }
+  };
 
   const syncQueued = async () => {
     if (!(await online())) return 0;
@@ -66,6 +93,12 @@ export default function RideMap() {
     geometry: { type: "Point" as const, coordinates: [p.lon, p.lat] },
   }));
 
+  const memberFeatures = (membersQuery.data ?? []).map((m) => ({
+    type: "Feature" as const,
+    properties: { name: m.name ?? "rider" },
+    geometry: { type: "Point" as const, coordinates: [m.lon, m.lat] },
+  }));
+
   return (
     <View style={{ flex: 1 }}>
       <MotoMap>
@@ -75,6 +108,15 @@ export default function RideMap() {
           <Layer
             id="poi-labels"
             source="pois"
+            type="symbol"
+            layout={{ "text-field": ["get", "name"], "text-size": 11, "text-offset": [0, 1.2] }}
+          />
+        </GeoJSONSource>
+        <GeoJSONSource id="members" data={{ type: "FeatureCollection", features: memberFeatures }}>
+          <Layer id="member-dots" source="members" type="circle" paint={{ "circle-radius": 8, "circle-color": "#2563eb" }} />
+          <Layer
+            id="member-labels"
+            source="members"
             type="symbol"
             layout={{ "text-field": ["get", "name"], "text-size": 11, "text-offset": [0, 1.2] }}
           />
@@ -99,6 +141,43 @@ export default function RideMap() {
         >
           <Text style={{ color: "#fff", fontSize: 20, fontWeight: "700" }}>{recording ? "STOP" : "START RIDE"}</Text>
         </Pressable>
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <Pressable
+            onPress={() => void share().catch(() => undefined)}
+            style={{ flex: 1, backgroundColor: groupId ? "#1d4ed8" : "#334155", padding: 16, borderRadius: 14, alignItems: "center" }}
+          >
+            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "700" }}>
+              {groupId ? `LIVE ${groupCode} (${memberFeatures.length})` : "SHARE LIVE"}
+            </Text>
+          </Pressable>
+          {!groupId && (
+            <View style={{ flex: 1, flexDirection: "row", gap: 8, alignItems: "center" }}>
+              <TextInput
+                value={joinCode}
+                onChangeText={setJoinCode}
+                placeholder="CODE"
+                autoCapitalize="characters"
+                maxLength={6}
+                style={{ flex: 1, backgroundColor: "#fff", padding: 14, borderRadius: 14, fontWeight: "700" }}
+              />
+              <Pressable
+                onPress={() =>
+                  void joinGroup
+                    .mutateAsync({ code: joinCode.trim().toUpperCase() })
+                    .then((g) => {
+                      setGroupId(g.id);
+                      setGroupCode(joinCode.trim().toUpperCase());
+                      setJoinCode("");
+                    })
+                    .catch(() => undefined)
+                }
+                style={{ backgroundColor: "#334155", padding: 16, borderRadius: 14 }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "700" }}>JOIN</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
         <View style={{ flexDirection: "row", gap: 12 }}>
           <Pressable
             onPress={() => crash()}
