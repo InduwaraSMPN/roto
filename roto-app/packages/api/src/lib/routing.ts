@@ -1,5 +1,6 @@
 // ponytail: Valhalla self-host > BRouter true bike costing > OSRM demo fallback
 export type LatLon = { lat: number; lon: number };
+export type Step = { instruction: string; lon: number; lat: number };
 
 const OSRM = "https://router.project-osrm.org/route/v1/motorcycle";
 const BROUTER = "https://brouter.de/brouter";
@@ -37,6 +38,7 @@ async function viaBrouter(points: LatLon[]) {
     km: Number(f.properties?.["track-length"] ?? 0) / 1000,
     min: Number(f.properties?.["total-time"] ?? 0) / 60,
     engine: "brouter" as const,
+    steps: [] as Step[], // ponytail: BRouter messages need custom profile; voice degrades gracefully
   };
 }
 
@@ -57,10 +59,17 @@ export async function planRoute(points: LatLon[], curvy = 0.5) {
       });
       if (!r.ok) throw new Error(`valhalla ${r.status}`);
       const j = (await r.json()) as any;
-      const shape: [number, number][] = j.trip.legs.flatMap((l: any) =>
-        typeof l.shape === "string" ? decodePolyline(l.shape) : (l.shape ?? []),
-      );
-      return { coords: shape, km: j.trip.summary.length, min: j.trip.summary.time / 60, engine: "valhalla" as const };
+      const coords: [number, number][] = [];
+      const steps: Step[] = [];
+      for (const leg of j.trip.legs ?? []) {
+        const pts: [number, number][] = typeof leg.shape === "string" ? decodePolyline(leg.shape) : (leg.shape ?? []);
+        for (const m of leg.maneuvers ?? []) {
+          const p = pts[m.begin_shape_index] ?? pts[0];
+          if (p && m.instruction) steps.push({ instruction: m.instruction, lon: p[0], lat: p[1] });
+        }
+        coords.push(...pts);
+      }
+      return { coords, steps, km: j.trip.summary.length, min: j.trip.summary.time / 60, engine: "valhalla" as const };
     } catch {
       // down/unset Valhalla (e.g. prod) → BRouter → OSRM below
     }
@@ -78,8 +87,16 @@ export async function planRoute(points: LatLon[], curvy = 0.5) {
   routes.sort((a: any, b: any) => Math.abs(a.distance / 1000 - 25) - Math.abs(b.distance / 1000 - 25));
   const pick = routes[curvy > 0.6 ? routes.length - 1 : 0] ?? routes[0];
   if (!pick) throw new Error("no route");
+  const steps: Step[] = (pick.legs ?? []).flatMap((l: any) =>
+    (l.steps ?? []).map((s: any) => ({
+      instruction: `${s.maneuver?.type ?? ""} ${s.maneuver?.modifier ?? ""} ${s.name ?? ""}`.trim() || "continue",
+      lon: s.maneuver?.location?.[0] ?? 0,
+      lat: s.maneuver?.location?.[1] ?? 0,
+    })),
+  );
   return {
     coords: pick.geometry.coordinates as [number, number][],
+    steps,
     km: pick.distance / 1000,
     min: pick.duration / 60,
     engine: "osrm" as const,

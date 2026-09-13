@@ -33,5 +33,18 @@ export const ridesRouter = router({
     const db = ctx.db;
     return db.select().from(sosContacts).where(eq(sosContacts.userId, ctx.session.user.id));
   }),
+  reportPoi: protectedProcedure
+    .input(
+      z.object({
+        kind: z.enum(["fuel", "ev", "dealer", "service", "hospital", "police", "hazard"]),
+        name: z.string().min(1).max(80),
+        lat: z.number().min(-90).max(90),
+        lon: z.number().min(-180).max(180),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [row] = await ctx.db.insert(pois).values({ ...input, nameEn: input.name }).returning();
+      return row;
+    }),
 });
 

@@ -33,10 +33,31 @@ const toGpx = (coords: [number, number][], name: string) =>
 export default function Plan() {
   const [preset, setPreset] = useState<keyof typeof PRESETS>("Colombo → Kandy");
   const [curvy, setCurvy] = useState(0.7);
+  const [imported, setImported] = useState<{ coords: [number, number][]; km: number } | null>(null);
   const mapEl = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const plan = useQuery({ ...trpc.route.plan.queryOptions({ points: [...PRESETS[preset]], curvy }), enabled: false });
+  const loop = useQuery({
+    ...trpc.route.roundTrip.queryOptions({ center: { lat: 6.9271, lon: 79.8612 }, km: 60, curvy }),
+    enabled: false,
+  });
+  const shown = imported ?? loop.data ?? plan.data ?? null;
+
+  const importFile = async (f: File | undefined) => {
+    if (!f) return;
+    const xml = await f.text();
+    const re = /<trkpt[^>]*lat="([\d.-]+)"[^>]*lon="([\d.-]+)"|<trkpt[^>]*lon="([\d.-]+)"[^>]*lat="([\d.-]+)"/g;
+    const coords: [number, number][] = [];
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(xml))) {
+      const lat = Number(m[1] ?? m[4]);
+      const lon = Number(m[2] ?? m[3]);
+      if (Number.isFinite(lat) && Number.isFinite(lon)) coords.push([lon, lat]);
+    }
+    if (coords.length > 1) setImported({ coords, km: 0 });
+  };
 
   useEffect(() => {
     if (!mapEl.current || map.current) return;
@@ -54,7 +75,7 @@ export default function Plan() {
 
   useEffect(() => {
     const m = map.current;
-    const coords = plan.data?.coords;
+    const coords = shown?.coords;
     if (!m || !coords?.length) return;
     const id = "roto-route";
     const geo = { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: coords } } as const;
@@ -70,12 +91,12 @@ export default function Plan() {
     };
     if (m.loaded()) draw();
     else m.once("load", draw);
-  }, [plan.data]);
+  }, [shown]);
 
   const download = () => {
-    if (!plan.data) return;
+    if (!shown) return;
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([toGpx(plan.data.coords, preset)], { type: "application/gpx+xml" }));
+    a.href = URL.createObjectURL(new Blob([toGpx(shown.coords, preset)], { type: "application/gpx+xml" }));
     a.download = "roto-ride.gpx";
     a.click();
   };
@@ -96,10 +117,17 @@ export default function Plan() {
         <button onClick={() => plan.refetch()} disabled={plan.isFetching} className="bg-green-700 text-white px-5 py-2 rounded-lg font-semibold disabled:opacity-50">
           {plan.isFetching ? "Planning…" : "Plan"}
         </button>
-        {plan.data && (
+        <button onClick={() => loop.refetch()} disabled={loop.isFetching} className="bg-emerald-700 text-white px-5 py-2 rounded-lg font-semibold disabled:opacity-50">
+          Loop 60km
+        </button>
+        <button onClick={() => fileRef.current?.click()} className="border px-4 py-2 rounded-lg">
+          Import GPX
+        </button>
+        <input ref={fileRef} type="file" accept=".gpx" className="hidden" onChange={(e) => void importFile(e.target.files?.[0])} />
+        {shown && (
           <>
             <span>
-              {plan.data.engine} · {plan.data.km.toFixed(0)} km · {plan.data.min.toFixed(0)} min
+              {imported ? `imported · ${imported.coords.length} pts` : `${(shown as { engine: string }).engine} · ${shown.km.toFixed(0)} km`}
             </span>
             <button onClick={download} className="border px-4 py-2 rounded-lg">
               GPX

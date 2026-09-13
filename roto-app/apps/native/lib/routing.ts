@@ -1,5 +1,5 @@
 // ponytail: client GPX only, engine stays server-side for FOSS tile independence
-export type RouteResult = { coords: [number, number][]; km: number; min: number; engine: string };
+export type RouteResult = { coords: [number, number][]; km: number; min: number; engine: string; steps?: { instruction: string; lon: number; lat: number }[] };
 
 export function toGpx(r: RouteResult, name = "roto-ride"): string {
   const pts = r.coords.map(([lon, lat]) => `<trkpt lat="${lat}" lon="${lon}"/>`).join("");

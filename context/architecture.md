@@ -37,6 +37,7 @@ Goal: free, open-source, offline-first motorcycle app for Sri Lanka. Speed + UI/
 4. Safety/i18n/POI: `lib/safety.ts` (4g watch, SMS→119 fallback, 1990), `lib/i18n.ts` (en/si/ta + si-LK/ta-LK voice), `packages/db/src/seed/pois.lk.ts` (10 seeds)
 5. Groups (polling v1, 5s): `ride_groups`/`group_members`/`live_positions` tables, tRPC `groups.*` (create/code/join/positions), Ride-tab SHARE/JOIN + blue member dots. Proven: 2 users → code → join → both visible. Positions in-DB (multi-instance safe); SSE only if polling measurably lags.
 6. Prod: `vercel.json` split (web :3001→/, server→/api), `DEPLOY.md` env map, web+server builds green, `VALHALLA_URL` unset-by-design in prod.
+7. Completion round: `planRoute` returns maneuver `steps` (valhalla 80/loop, osrm narrated, brouter none); native active-route line + 120m voice follow + LOOP/IMPORT/HAZARD + km/min/kmh + Open-Meteo widget with rain voice alert; web Loop + GPX import; `rides.reportPoi` (hazard kind). Proven: loop 107.5km/80 steps, hazard round-trips to DB.
 
 ## Next
 

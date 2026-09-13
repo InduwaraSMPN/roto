@@ -21,7 +21,9 @@ export function haversineKm(a: [number, number][], b: { latitude: number; longit
 export function useRideRecorder(onCrash: () => void, onLocation?: (lon: number, lat: number) => void) {
   const [recording, setRecording] = useState(false);
   const [km, setKm] = useState(0);
+  const [elapsedMin, setElapsedMin] = useState(0);
   const coords = useRef<[number, number][]>([]);
+  const startedAt = useRef(0);
   const sub = useRef<Location.LocationSubscription | null>(null);
   const stopCrash = useRef<(() => void) | null>(null);
 
@@ -30,6 +32,8 @@ export function useRideRecorder(onCrash: () => void, onLocation?: (lon: number, 
     if (status !== "granted") throw new Error("location denied");
     coords.current = [];
     setKm(0);
+    setElapsedMin(0);
+    startedAt.current = Date.now();
     stopCrash.current = startCrashWatch(onCrash);
     sub.current = await Location.watchPositionAsync(
       { accuracy: Location.Accuracy.High, distanceInterval: 10 },
@@ -48,13 +52,16 @@ export function useRideRecorder(onCrash: () => void, onLocation?: (lon: number, 
     stopCrash.current?.();
     stopCrash.current = null;
     setRecording(false);
-    const route: RouteResult = { coords: coords.current, km, min: 0, engine: "gps" };
+    const min = (Date.now() - startedAt.current) / 60000;
+    setElapsedMin(min);
+    const route: RouteResult = { coords: coords.current, km, min, engine: "gps" };
     const id = `${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
     await enqueueRide({ id, name: `Ride ${new Date().toLocaleDateString()}`, distanceKm: km, gpx: toGpx(route) });
     return { ...route, id };
   };
 
   const online = async () => (await Network.getNetworkStateAsync().catch(() => null))?.isConnected ?? true;
+  const avgKmh = elapsedMin > 0.05 ? km / (elapsedMin / 60) : 0;
 
-  return { recording, km, start, stop, online };
+  return { recording, km, elapsedMin, avgKmh, start, stop, online };
 }
