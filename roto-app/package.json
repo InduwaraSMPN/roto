@@ -1,0 +1,52 @@
+{
+  "name": "roto-app",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "dev:native": "turbo run dev -F native --",
+    "dev:web": "turbo run dev -F web --",
+    "dev:server": "turbo run dev -F server --",
+    "db:push": "turbo run db:push -F @roto-app/db --",
+    "db:studio": "turbo run db:studio -F @roto-app/db --",
+    "db:generate": "turbo run db:generate -F @roto-app/db --",
+    "db:migrate": "turbo run db:migrate -F @roto-app/db --",
+    "deploy:setup": "vercel link",
+    "dev:vercel": "vercel dev -L",
+    "env:preview": "tsx scripts/sync-vercel-env.ts preview",
+    "env:production": "tsx scripts/sync-vercel-env.ts production",
+    "deploy": "vercel deploy",
+    "deploy:prod": "vercel deploy --prod",
+    "deploy:check": "vercel deploy --dry",
+    "env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./apps/native/ && varlock codegen --path ./packages/db/",
+    "postinstall": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./apps/native/ && varlock codegen --path ./packages/db/",
+    "check": "biome check --write ."
+  },
+  "dependencies": {
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.12",
+    "@roto-app/config": "*",
+    "@types/node": "^26.4.1",
+    "tsx": "^4.23.13",
+    "turbo": "^2.10.12",
+    "typescript": "^6.0.3",
+    "varlock": "1.18.0",
+    "vercel": "^59.11.7"
+  },
+  "overrides": {
+    "@next/env": "npm:@varlock/nextjs-integration@1.2.2"
+  },
+  "packageManager": "npm@12.0.2",
+  "allowScripts": {
+    "esbuild": true,
+    "sharp": true
+  }
+}

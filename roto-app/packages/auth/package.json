@@ -1,0 +1,25 @@
+{
+  "name": "@roto-app/auth",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@better-auth/expo": "1.7.3",
+    "@roto-app/db": "*",
+    "better-auth": "1.7.3",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@roto-app/config": "*",
+    "typescript": "^6.0.3"
+  }
+}

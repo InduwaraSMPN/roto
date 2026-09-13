@@ -1,0 +1,3 @@
+{
+  "extends": "@roto-app/config/tsconfig.base.json"
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@roto-app/api",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@roto-app/auth": "*",
+    "@roto-app/db": "*",
+    "@trpc/client": "^11.18.0",
+    "@trpc/server": "^11.18.0",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@roto-app/config": "*",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,0 +1,13 @@
+services:
+  martin:
+    image: maplibre/martin:latest
+    ports: ["3005:3000"]
+    volumes: ["./data:/data:ro"]
+    command: --listen-addresses 0.0.0.0:3000 /data/sri-lanka.mbtiles
+    restart: unless-stopped
+  valhalla:
+    image: ghcr.io/valhalla/valhalla:latest
+    ports: ["8002:8002"]
+    volumes: ["./valhalla:/custom_files"]
+    command: valhalla_service /custom_files/valhalla.json 1
+    restart: unless-stopped
