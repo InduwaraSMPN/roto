@@ -36,6 +36,9 @@ npm run dev:server   # :3000 — if EADDRINUSE, a stale server squats :3000: pyt
 ```bash
 cd apps/native && npx expo run:android   # dev build, ~5-10 min first time
 ```
+No local SDK? Cloud instead: `eas build --profile development` (config in
+`apps/native/eas.json` — set YOUR LAN IP in its `env` first; EAS bakes env at
+build time, `.env` edits after won't apply).
 
 ## 4. On the phone — Ride tab, expect:
 

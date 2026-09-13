@@ -7,8 +7,8 @@ Goal: free, open-source, offline-first motorcycle app for Sri Lanka. Speed + UI/
 `roto-app/` — turborepo + npm workspaces. From `bts.jsonc` v3.43.0:
 `next + native-uniwind | hono/node + trpc | postgres/drizzle + supabase(manual) | better-auth | turborepo,pwa,biome | vercel/vercel`.
 
-- `apps/web` — Next.js 16 planner (port 3001), Tailwind, shadcn via `packages/ui`
-- `apps/native` — Expo 57 + expo-router, Uniwind, HeroUI native (dev builds only)
+- `apps/web` — Next.js 16 planner (port 3001), Tailwind, shadcn via `packages/ui`. `/plan` page: presets + curvy slider → tRPC `route.plan` → maplibre-gl line + GPX download (builds clean).
+- `apps/native` — Expo 57 + expo-router, Uniwind, HeroUI native (dev builds only). `eas.json` (development/internal APK + preview + production; LAN IPs baked at build time). Ride tab: session banner → Home sign-in (SignIn/SignUp exist), SOS contacts load when logged in, sync/SOS degrade gracefully logged-out.
 - `apps/server` — Hono + tRPC (port 3000) via `@trpc/server/adapters/fetch` (NOT @hono/trpc-server: v0.4.2 speaks v10 protocol, breaks v11 client inputs). Default transformer = identity: batch clients send RAW input, no `{"json"}` envelope. `process.loadEnvFile()` in index.ts for infra URLs varlock skips. Orphan servers squat on :3000 across shell calls — kill via `/tmp/opencode/freeport.py`, never `pkill -f` (matches own cmdline).
 - `packages/api|auth|db|ui|config` — shared tRPC routers, better-auth, Drizzle schema, shadcn primitives
 - Root: `turbo.json`, `biome.json`, `vercel.json`, `bts.jsonc`

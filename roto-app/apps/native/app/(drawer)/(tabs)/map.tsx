@@ -1,5 +1,6 @@
 import { Camera, GeoJSONSource, Layer } from "@maplibre/maplibre-react-native";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Link } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
 import { MotoMap } from "@/components/moto-map";
@@ -8,6 +9,7 @@ import { downloadLkRegion } from "@/lib/maps";
 import { clearQueued, listQueued } from "@/lib/ride-queue";
 import { useRideRecorder } from "@/lib/ride-recorder";
 import { sosAlert } from "@/lib/safety";
+import { authClient } from "@/lib/auth-client";
 import { trpc } from "@/utils/trpc";
 
 const COLOMBO: [number, number] = [79.8612, 6.9271];
@@ -15,7 +17,8 @@ const lang: Lang = "en";
 
 export default function RideMap() {
   const poisQuery = useQuery(trpc.rides.pois.queryOptions({}));
-  const sosQuery = useQuery(trpc.rides.sosList.queryOptions());
+  const { data: session } = authClient.useSession();
+  const sosQuery = useQuery({ ...trpc.rides.sosList.queryOptions(), enabled: !!session?.user });
   const createRide = useMutation(trpc.rides.create.mutationOptions());
 
   const crash = () => {
@@ -78,6 +81,17 @@ export default function RideMap() {
         </GeoJSONSource>
       </MotoMap>
       <View style={{ position: "absolute", bottom: 28, left: 16, right: 16, gap: 12 }}>
+        {!session?.user ? (
+          <Link href="/(drawer)" asChild>
+            <Pressable style={{ backgroundColor: "#1e3a8a", padding: 12, borderRadius: 12, alignItems: "center" }}>
+              <Text style={{ color: "#fff", fontWeight: "700" }}>Sign in on Home for sync + SOS contacts</Text>
+            </Pressable>
+          </Link>
+        ) : (
+          <Text style={{ color: "#93c5fd", textAlign: "center" }}>
+            {session.user.email} · {(sosQuery.data ?? []).length} SOS contacts
+          </Text>
+        )}
         <Text style={{ color: "#fff", fontSize: 18, textAlign: "center" }}>{recording ? `${km.toFixed(1)} km ● REC` : "Ready"}</Text>
         <Pressable
           onPress={() => void toggle()}
