@@ -1,5 +1,6 @@
 import * as Location from "expo-location";
 import * as Network from "expo-network";
+import { DeviceMotion } from "expo-sensors";
 import { useRef, useState } from "react";
 
 import { enqueueRide } from "./ride-queue";
@@ -18,12 +19,19 @@ export function haversineKm(a: [number, number][], b: { latitude: number; longit
   return 2 * R * Math.asin(Math.sqrt(s));
 }
 
-export function useRideRecorder(onCrash: () => void, onLocation?: (lon: number, lat: number) => void) {
+export function useRideRecorder(
+  onCrash: () => void,
+  onLocation?: (lon: number, lat: number, heading: number, speedKmh: number) => void,
+  opts?: { lowPower?: boolean },
+) {
   const [recording, setRecording] = useState(false);
   const [km, setKm] = useState(0);
   const [elapsedMin, setElapsedMin] = useState(0);
+  const [maxLean, setMaxLean] = useState(0);
   const coords = useRef<[number, number][]>([]);
   const startedAt = useRef(0);
+  const leanPeak = useRef(0);
+  const motionSub = useRef<{ remove: () => void } | null>(null);
   const sub = useRef<Location.LocationSubscription | null>(null);
   const stopCrash = useRef<(() => void) | null>(null);
 
@@ -33,35 +41,56 @@ export function useRideRecorder(onCrash: () => void, onLocation?: (lon: number, 
     coords.current = [];
     setKm(0);
     setElapsedMin(0);
+    setMaxLean(0);
+    leanPeak.current = 0;
     startedAt.current = Date.now();
+    // ponytail: 1Hz roll sampling, peak only — corner graphs need map-matching later.
+    // low-power: IMU off (GPS crash watch stays on — safety is never saver-gated)
+    if (!opts?.lowPower) {
+      try {
+        DeviceMotion.setUpdateInterval(1000);
+        motionSub.current = DeviceMotion.addListener((m) => {
+          const g = Math.abs(((m.rotation?.gamma ?? 0) * 180) / Math.PI);
+          if (g > leanPeak.current && g < 80) leanPeak.current = Math.round(g * 10) / 10;
+        });
+      } catch {
+        // no IMU — lean stays 0
+      }
+    }
     stopCrash.current = startCrashWatch(onCrash);
     sub.current = await Location.watchPositionAsync(
-      { accuracy: Location.Accuracy.High, distanceInterval: 10 },
+      opts?.lowPower
+        ? { accuracy: Location.Accuracy.Balanced, distanceInterval: 50 }
+        : { accuracy: Location.Accuracy.High, distanceInterval: 10 },
       (loc) => {
         setKm((k) => k + haversineKm(coords.current, loc.coords));
         coords.current.push([loc.coords.longitude, loc.coords.latitude]);
-        onLocation?.(loc.coords.longitude, loc.coords.latitude);
+        onLocation?.(loc.coords.longitude, loc.coords.latitude, loc.coords.heading ?? 0, (loc.coords.speed ?? 0) * 3.6);
       },
     );
     setRecording(true);
   };
 
-  const stop = async (): Promise<RouteResult & { id: string }> => {
+  const stop = async (trim?: (c: [number, number][]) => [number, number][]): Promise<RouteResult & { id: string; maxLean: number }> => {
     sub.current?.remove();
     sub.current = null;
+    motionSub.current?.remove();
+    motionSub.current = null;
     stopCrash.current?.();
     stopCrash.current = null;
     setRecording(false);
     const min = (Date.now() - startedAt.current) / 60000;
     setElapsedMin(min);
-    const route: RouteResult = { coords: coords.current, km, min, engine: "gps" };
+    setMaxLean(leanPeak.current);
+    const trimmed = trim ? trim(coords.current) : coords.current;
+    const route: RouteResult = { coords: trimmed, km, min, engine: "gps" };
     const id = `${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
-    await enqueueRide({ id, name: `Ride ${new Date().toLocaleDateString()}`, distanceKm: km, gpx: toGpx(route) });
-    return { ...route, id };
+    await enqueueRide({ id, name: `Ride ${new Date().toLocaleDateString()}`, distanceKm: km, maxLean: leanPeak.current, gpx: toGpx(route) });
+    return { ...route, id, maxLean: leanPeak.current };
   };
 
   const online = async () => (await Network.getNetworkStateAsync().catch(() => null))?.isConnected ?? true;
   const avgKmh = elapsedMin > 0.05 ? km / (elapsedMin / 60) : 0;
 
-  return { recording, km, elapsedMin, avgKmh, start, stop, online };
+  return { recording, km, elapsedMin, avgKmh, maxLean, start, stop, online };
 }

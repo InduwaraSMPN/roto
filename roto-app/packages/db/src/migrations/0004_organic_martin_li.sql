@@ -1,0 +1,1 @@
+ALTER TABLE "rides" ADD COLUMN "max_lean_deg" real;

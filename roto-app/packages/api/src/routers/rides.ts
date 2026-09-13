@@ -5,7 +5,7 @@ import { protectedProcedure, publicProcedure, router } from "../index";
 
 export const ridesRouter = router({
   create: protectedProcedure
-    .input(z.object({ name: z.string().default("Ride"), distanceKm: z.number().default(0), gpx: z.string().optional() }))
+    .input(z.object({ name: z.string().default("Ride"), distanceKm: z.number().default(0), maxLeanDeg: z.number().optional(), gpx: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const db = ctx.db;
       const [row] = await db.insert(rides).values({ userId: ctx.session.user.id, ...input }).returning();

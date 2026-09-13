@@ -6,6 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 
 import { trpc } from "@/utils/trpc";
+import { authClient } from "@/lib/auth-client";
 
 const STYLE = process.env.NEXT_PUBLIC_TILE_URL || "https://demotiles.maplibre.org/style.json";
 const PRESETS = {
@@ -39,6 +40,25 @@ export default function Plan() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const plan = useQuery({ ...trpc.route.plan.queryOptions({ points: [...PRESETS[preset]], curvy }), enabled: false });
+  const { data: session } = authClient.useSession();
+  const zonesQuery = useQuery({ ...trpc.privacy.list.queryOptions(), enabled: !!session?.user });
+  const trim = (coords: [number, number][]): [number, number][] => {
+    const zones = (zonesQuery.data ?? []).map((z) => ({ lat: z.lat, lon: z.lon, radiusM: z.radiusM }));
+    if (!zones.length || coords.length < 2) return coords;
+    const inside = (lon: number, lat: number) =>
+      zones.some((z) => {
+        const R = 6371000;
+        const dLa = ((lat - z.lat) * Math.PI) / 180;
+        const dLo = ((lon - z.lon) * Math.PI) / 180;
+        const s = Math.sin(dLa / 2) ** 2 + Math.cos((z.lat * Math.PI) / 180) * Math.cos((lat * Math.PI) / 180) * Math.sin(dLo / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(s)) <= z.radiusM;
+      });
+    let s = 0;
+    let e = coords.length;
+    while (s < e && coords[s] && inside(coords[s][0], coords[s][1])) s++;
+    while (e > s + 1 && coords[e - 1] && inside(coords[e - 1][0], coords[e - 1][1])) e--;
+    return coords.slice(s, e);
+  };
   const loop = useQuery({
     ...trpc.route.roundTrip.queryOptions({ center: { lat: 6.9271, lon: 79.8612 }, km: 60, curvy }),
     enabled: false,
@@ -96,7 +116,7 @@ export default function Plan() {
   const download = () => {
     if (!shown) return;
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([toGpx(shown.coords, preset)], { type: "application/gpx+xml" }));
+    a.href = URL.createObjectURL(new Blob([toGpx(trim(shown.coords), preset)], { type: "application/gpx+xml" }));
     a.download = "roto-ride.gpx";
     a.click();
   };

@@ -38,10 +38,14 @@ Goal: free, open-source, offline-first motorcycle app for Sri Lanka. Speed + UI/
 5. Groups (polling v1, 5s): `ride_groups`/`group_members`/`live_positions` tables, tRPC `groups.*` (create/code/join/positions), Ride-tab SHARE/JOIN + blue member dots. Proven: 2 users → code → join → both visible. Positions in-DB (multi-instance safe); SSE only if polling measurably lags.
 6. Prod: `vercel.json` split (web :3001→/, server→/api), `DEPLOY.md` env map, web+server builds green, `VALHALLA_URL` unset-by-design in prod.
 7. Completion round: `planRoute` returns maneuver `steps` (valhalla 80/loop, osrm narrated, brouter none); native active-route line + 120m voice follow + LOOP/IMPORT/HAZARD + km/min/kmh + Open-Meteo widget with rain voice alert; web Loop + GPX import; `rides.reportPoi` (hazard kind). Proven: loop 107.5km/80 steps, hazard round-trips to DB.
+8. Missing-four round: 5 curated Valhalla-generated LK routes (`curated.*` + ROUTES cycler + web presets hookup pending); events/RSVPs + derived monthly leaderboard + Rides tab (proven: RiderA 77.5km board, maxLean 28.5° stored); lean peak via DeviceMotion roll → `rides.max_lean_deg` → readout + sync; in-app Ride HUD (speed/arrow/instruction/distance). CarPlay NOT installed (react-native-carplay unmaintained for RN 0.86/new-arch; needs Apple entitlement + MFi + macOS build + car — HUD covers the glanceable value on any phone).
+9. Final halves: privacy zones (`privacy_zones` + `privacy.*` setHome/list/remove; `trimEnds` masks start/end on GPX export + suppresses live broadcast inside zones; ⌂ HOME button + Rides-tab manager; proven: set→list→trim 5→3pts) + battery-saver (SecureStore-persisted toggle: Balanced/50m GPS, IMU off, 30s member poll; crash watch never gated).
+10. UI/UX pass: OMT attribution on map (license), ROTO branding (drawer/tabs/home/web hero), theme-aware Ride tab, persisted en/si/ta switcher driving UI+voice (si/ta need native-speaker review), busy spinners + error toasts on all async buttons, SafeArea overlay, HUD SafeArea + translated exit.
 
 ## Next
 
-- Device test: offline packs + trilingual labels on real hardware (emulator localhost ≠ device LAN)
+- Device test: offline packs + trilingual labels + HUD + lean readout on real hardware (see `roto-app/DEVICE-TEST.md`)
+- CarPlay/Android Auto (blocked: entitlement + MFi + macOS + car hardware; HUD is the interim)
 - BRouter on-device (needs native Java + Android build env; public-API tier covers costing till then)
-- Supabase Realtime group ride + Storage GPX/photos
+- Supabase Storage GPX/photos (DB stores GPX text today — fine to 100s of rides)
 - `VALHALLA_URL` in Vercel only when a hosted Valhalla exists (fallback covers prod today)

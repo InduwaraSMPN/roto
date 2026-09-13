@@ -9,22 +9,26 @@ export async function queueDb() {
     await db.execAsync(
       "CREATE TABLE IF NOT EXISTS pending_rides (id TEXT PRIMARY KEY, name TEXT, distanceKm REAL, gpx TEXT, createdAt INTEGER);",
     );
+    await db.execAsync("ALTER TABLE pending_rides ADD COLUMN maxLean REAL").catch(() => {
+      // column already there
+    });
   }
   return db;
 }
 
-export async function enqueueRide(r: { id: string; name: string; distanceKm: number; gpx?: string }) {
+export async function enqueueRide(r: { id: string; name: string; distanceKm: number; maxLean?: number; gpx?: string }) {
   const d = await queueDb();
-  await d.runAsync("INSERT OR REPLACE INTO pending_rides VALUES (?,?,?,?,?)", [
+  await d.runAsync("INSERT OR REPLACE INTO pending_rides VALUES (?,?,?,?,?,?)", [
     r.id,
     r.name,
     r.distanceKm,
     r.gpx ?? null,
     Date.now(),
+    r.maxLean ?? null,
   ]);
 }
 
-export async function listQueued(): Promise<{ id: string; name: string; distanceKm: number; gpx: string | null }[]> {
+export async function listQueued(): Promise<{ id: string; name: string; distanceKm: number; maxLean: number | null; gpx: string | null }[]> {
   const d = await queueDb();
   return d.getAllAsync("SELECT * FROM pending_rides ORDER BY createdAt");
 }

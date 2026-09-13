@@ -10,6 +10,7 @@ export const rides = pgTable(
     startedAt: timestamp("started_at").defaultNow().notNull(),
     endedAt: timestamp("ended_at"),
     distanceKm: real("distance_km").default(0).notNull(),
+    maxLeanDeg: real("max_lean_deg"), // ponytail: peak roll only v1, no per-corner graphs yet
     gpx: text("gpx"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
