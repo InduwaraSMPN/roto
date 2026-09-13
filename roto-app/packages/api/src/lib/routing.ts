@@ -3,7 +3,7 @@ export type LatLon = { lat: number; lon: number };
 
 const OSRM = "https://router.project-osrm.org/route/v1/motorcycle";
 const BROUTER = "https://brouter.de/brouter";
-const VALHALLA = process.env.VALHALLA_URL; // e.g. http://localhost:8002/route
+// ponytail: read lazily — server .env (varlock) loads after module init
 
 // ponytail: 20-line polyline6 decoder, not a new dep
 function decodePolyline(str: string, precision = 6): [number, number][] {
@@ -42,6 +42,7 @@ async function viaBrouter(points: LatLon[]) {
 
 export async function planRoute(points: LatLon[], curvy = 0.5) {
   const coord = points.map((p) => `${p.lon},${p.lat}`).join(";");
+  const VALHALLA = process.env.VALHALLA_URL; // e.g. http://localhost:8002/route
   if (VALHALLA) {
     try {
       const r = await fetch(`${VALHALLA}`, {

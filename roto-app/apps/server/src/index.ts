@@ -1,4 +1,4 @@
-import { trpcServer } from "@hono/trpc-server";
+import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "@roto-app/api/routers/index";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -7,6 +7,13 @@ import { logger } from "hono/logger";
 import { createContext } from "./context";
 import { env } from "./env.server";
 import { auth } from "./services";
+
+// ponytail: Node built-in dotenv for infra URLs varlock skips (empty schema defaults); never overrides real env (prod)
+try {
+  process.loadEnvFile?.();
+} catch {
+  // prod provides env directly
+}
 
 const app = new Hono();
 
@@ -23,13 +30,12 @@ app.use(
 
 app.on(["POST", "GET"], "/api/auth/*", async (c) => auth.handler(c.req.raw));
 
-app.use(
-  "/trpc/*",
-  trpcServer({
+app.use("/trpc/*", (c) =>
+  fetchRequestHandler({
+    endpoint: "/trpc",
+    req: c.req.raw,
     router: appRouter,
-    createContext: (_opts, context) => {
-      return createContext({ context });
-    },
+    createContext: () => createContext({ context: c }),
   }),
 );
 
