@@ -16,6 +16,7 @@ import { LANGS, speak, useLang } from "@/lib/i18n";
 import { downloadLkRegion } from "@/lib/maps";
 import { clearQueued, listQueued } from "@/lib/ride-queue";
 import { haversineKm, useRideRecorder } from "@/lib/ride-recorder";
+import { ROTO, numerals } from "@/lib/roto-theme";
 import type { RouteResult } from "@/lib/routing";
 import { sosAlert } from "@/lib/safety";
 import { authClient } from "@/lib/auth-client";
@@ -268,9 +269,9 @@ export default function RideMap() {
   if (hud) {
     return (
       <Pressable onPress={() => setHud(false)} style={{ flex: 1, backgroundColor: "#000", justifyContent: "center", alignItems: "center", gap: 16, padding: 24, paddingTop: insets.top + 24 }}>
-        <Text style={{ color: "#fff", fontSize: 64, fontWeight: "800" }}>{hudInfo.speed}</Text>
+        <Text style={{ color: "#fff", fontSize: 64, ...numerals }}>{hudInfo.speed}</Text>
         <Text style={{ color: "#888", fontSize: 18 }}>km/h</Text>
-        <Text style={{ color: "#4ade80", fontSize: 72, transform: [{ rotate: `${hudInfo.arrowDeg}deg` }] }}>▲</Text>
+        <Text style={{ color: ROTO.signal, fontSize: 72, transform: [{ rotate: `${hudInfo.arrowDeg}deg` }] }}>▲</Text>
         <Text style={{ color: "#fff", fontSize: 22, textAlign: "center" }}>{hudInfo.instr || t.noRouteHud}</Text>
         <Text style={{ color: "#fcd34d", fontSize: 28, fontWeight: "700" }}>
           {hudInfo.distM > 950 ? `${(hudInfo.distM / 1000).toFixed(1)} km` : `${hudInfo.distM} m`}
@@ -311,37 +312,56 @@ export default function RideMap() {
 
         {!session?.user ? (
           <Link href="/(drawer)" asChild>
-            <Pressable style={{ backgroundColor: "#1e3a8a", padding: 12, borderRadius: 12, alignItems: "center" }}>
+            <Pressable style={{ backgroundColor: "#1e3a8a", padding: 12, borderRadius: ROTO.radius, alignItems: "center" }}>
               <Text style={{ color: "#fff", fontWeight: "700" }}>{t.signInPrompt}</Text>
             </Pressable>
           </Link>
         ) : (
-          <Text style={{ color: muted, textAlign: "center" }}>
-            {session.user.email} · {(sosQuery.data ?? []).length} SOS
-          </Text>
+          <View>
+            <Text style={{ color: fg, textAlign: "center", fontWeight: "600" }}>{session.user.email}</Text>
+            <Text style={{ color: muted, textAlign: "center", fontSize: 13 }}>
+              {(sosQuery.data ?? []).length} SOS contacts
+            </Text>
+          </View>
         )}
 
-        <Text style={{ color: fg, fontSize: 18, textAlign: "center", fontWeight: "600" }}>
-          {recording ? `${km.toFixed(1)} km · ${elapsedMin.toFixed(0)} min · ${avgKmh.toFixed(0)} km/h ● ${t.rec}` : maxLean > 0 ? `${t.lastRide} · ${t.maxLean} ${maxLean.toFixed(0)}°` : t.ready}
-        </Text>
+        <View style={{ alignItems: "center" }}>
+          <Text style={{ color: fg, fontSize: 44, textAlign: "center", ...numerals }}>
+            {recording ? km.toFixed(1) : maxLean > 0 ? maxLean.toFixed(0) + "°" : "—"}
+          </Text>
+          <Text style={{ color: muted, textAlign: "center", fontSize: 13 }}>
+            {recording ? `km · ${elapsedMin.toFixed(0)} min · ${avgKmh.toFixed(0)} km/h ● ${t.rec}` : maxLean > 0 ? `${t.lastRide} ${t.maxLean}` : t.ready}
+          </Text>
+        </View>
         {wx && (
           <Text style={{ color: "#fcd34d", textAlign: "center" }}>
-            {wx.temp.toFixed(0)}°C · rain {wx.rain.toFixed(1)}mm · wind {wx.wind.toFixed(0)}km/h
+            {wx.temp.toFixed(0)}°C · {t.rainLabel} {wx.rain.toFixed(1)}mm · {t.windLabel} {wx.wind.toFixed(0)}km/h
           </Text>
         )}
         {route && (
           <Pressable onPress={() => setRoute(null)}>
-            <Text style={{ color: "#fda4af", textAlign: "center" }}>
-              {route.name} · {route.engine} · {route.km.toFixed(0)}km ✕
+            <Text style={{ color: fg, textAlign: "center", fontWeight: "600" }}>{route.name}</Text>
+            <Text style={{ color: muted, textAlign: "center", fontSize: 13 }}>
+              {route.engine} · {route.km.toFixed(0)}km · {t.dismiss} ✕
             </Text>
           </Pressable>
         )}
 
         <Pressable
           onPress={() => void toggle()}
-          style={{ backgroundColor: recording ? "#dc2626" : "#16a34a", padding: 20, borderRadius: 16, alignItems: "center" }}
+          style={{
+            backgroundColor: recording ? ROTO.danger : ROTO.signal,
+            padding: 20,
+            borderRadius: ROTO.radius,
+            alignItems: "center",
+            shadowColor: recording ? undefined : ROTO.signal,
+            shadowOpacity: recording ? 0 : 0.35,
+            shadowRadius: 18,
+          }}
         >
-          <Text style={{ color: "#fff", fontSize: 20, fontWeight: "700" }}>{recording ? t.stop : t.startRide}</Text>
+          <Text style={{ color: recording ? "#fff" : ROTO.signalInk, fontSize: 20, fontWeight: "800", letterSpacing: 1 }}>
+            {recording ? t.stop : t.startRide}
+          </Text>
         </Pressable>
 
         <View style={{ flexDirection: "row", gap: 12 }}>

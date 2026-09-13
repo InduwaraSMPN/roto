@@ -41,6 +41,7 @@ Goal: free, open-source, offline-first motorcycle app for Sri Lanka. Speed + UI/
 8. Missing-four round: 5 curated Valhalla-generated LK routes (`curated.*` + ROUTES cycler + web presets hookup pending); events/RSVPs + derived monthly leaderboard + Rides tab (proven: RiderA 77.5km board, maxLean 28.5° stored); lean peak via DeviceMotion roll → `rides.max_lean_deg` → readout + sync; in-app Ride HUD (speed/arrow/instruction/distance). CarPlay NOT installed (react-native-carplay unmaintained for RN 0.86/new-arch; needs Apple entitlement + MFi + macOS build + car — HUD covers the glanceable value on any phone).
 9. Final halves: privacy zones (`privacy_zones` + `privacy.*` setHome/list/remove; `trimEnds` masks start/end on GPX export + suppresses live broadcast inside zones; ⌂ HOME button + Rides-tab manager; proven: set→list→trim 5→3pts) + battery-saver (SecureStore-persisted toggle: Balanced/50m GPS, IMU off, 30s member poll; crash watch never gated).
 10. UI/UX pass: OMT attribution on map (license), ROTO branding (drawer/tabs/home/web hero), theme-aware Ride tab, persisted en/si/ta switcher driving UI+voice (si/ta need native-speaker review), busy spinners + error toasts on all async buttons, SafeArea overlay, HUD SafeArea + translated exit.
+11. shadcn system: web already shadcn — plan/hero now use real `Button` variants; `.dark` tokens overridden to Roto identity (signal-amber primary, asphalt bg, 14px radius); native `roto-theme.ts` mirrors the same roles (CSS vars don't cross to native).
 
 ## Next
 

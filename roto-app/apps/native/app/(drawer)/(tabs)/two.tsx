@@ -67,8 +67,8 @@ export default function Community() {
             placeholder={t.newRideName}
             className="flex-1 bg-secondary text-foreground p-3 rounded-lg"
           />
-          <Pressable onPress={() => void add()} className="bg-green-700 px-4 rounded-lg justify-center">
-            <Text className="text-white font-bold">{t.add}</Text>
+          <Pressable onPress={() => void add()} className="bg-[#FFB300] px-4 rounded-lg justify-center">
+            <Text className="text-black font-bold">{t.add}</Text>
           </Pressable>
         </View>
       )}

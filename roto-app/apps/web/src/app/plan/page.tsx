@@ -5,6 +5,7 @@ import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 
+import { Button } from "@roto-app/ui/components/button";
 import { trpc } from "@/utils/trpc";
 import { authClient } from "@/lib/auth-client";
 
@@ -134,24 +135,24 @@ export default function Plan() {
           Curvy {Math.round(curvy * 100)}%
           <input type="range" min={0} max={1} step={0.1} value={curvy} onChange={(e) => setCurvy(Number(e.target.value))} />
         </label>
-        <button onClick={() => plan.refetch()} disabled={plan.isFetching} className="bg-green-700 text-white px-5 py-2 rounded-lg font-semibold disabled:opacity-50">
+        <Button onClick={() => plan.refetch()} disabled={plan.isFetching} className="font-bold">
           {plan.isFetching ? "Planning…" : "Plan"}
-        </button>
-        <button onClick={() => loop.refetch()} disabled={loop.isFetching} className="bg-emerald-700 text-white px-5 py-2 rounded-lg font-semibold disabled:opacity-50">
+        </Button>
+        <Button onClick={() => loop.refetch()} disabled={loop.isFetching} className="font-bold">
           Loop 60km
-        </button>
-        <button onClick={() => fileRef.current?.click()} className="border px-4 py-2 rounded-lg">
+        </Button>
+        <Button variant="outline" onClick={() => fileRef.current?.click()}>
           Import GPX
-        </button>
+        </Button>
         <input ref={fileRef} type="file" accept=".gpx" className="hidden" onChange={(e) => void importFile(e.target.files?.[0])} />
         {shown && (
           <>
             <span>
               {imported ? `imported · ${imported.coords.length} pts` : `${(shown as { engine: string }).engine} · ${shown.km.toFixed(0)} km`}
             </span>
-            <button onClick={download} className="border px-4 py-2 rounded-lg">
+            <Button variant="outline" size="sm" onClick={download}>
               GPX
-            </button>
+            </Button>
           </>
         )}
       </div>
