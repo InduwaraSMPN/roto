@@ -21,7 +21,7 @@ Goal: free, open-source, offline-first motorcycle app for Sri Lanka. Speed + UI/
 
 ## Data / auth
 
-- Postgres via Supabase (manual mode: `supabase init/start` in `packages/db`, `DATABASE_URL` in `apps/server/.env`). Drizzle ORM. PostGIS / Realtime / Storage not wired yet.
+- Postgres via Supabase (manual mode) AND compose `postgis/postgis:16-3.4` (`tiles/docker-compose.yml`, vol `roto-pgdata`, :54322). Drizzle ORM. Tables live: rides/pois/sos_contacts + 10 POI seeds. PostGIS ext on.
 - better-auth (not Supabase Auth). tRPC end-to-end types web+native.
 
 ## Workflows
