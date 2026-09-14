@@ -29,70 +29,114 @@ export default function Community() {
 
   return (
     <Container className="p-6">
-      <Text className="text-2xl font-bold text-foreground mb-1">{t.challenge}</Text>
-      <Text className="text-muted mb-3">{t.challengeSub}</Text>
-      {(boardQuery.data ?? []).map((r, i) => (
-        <View key={r.name} className="flex-row justify-between py-2 border-b border-muted">
-          <Text className="text-foreground font-semibold">
-            {i + 1}. {r.name}
-          </Text>
-          <Text className="text-foreground">{r.km} km</Text>
-        </View>
-      ))}
-      {!boardQuery.data?.length && <Text className="text-muted mb-4">{t.noRides}</Text>}
+      <View className="py-2">
+        <Text className="text-2xl font-extrabold tracking-tight text-foreground">
+          {t.challenge}
+        </Text>
+        <Text className="mt-1 text-muted">{t.challengeSub}</Text>
+      </View>
+      <View className="mt-3 rounded-2xl border border-muted p-4">
+        {(boardQuery.data ?? []).map((r, i) => (
+          <View
+            key={r.name}
+            className="flex-row items-center justify-between border-b border-muted py-2.5 last:border-b-0 last:pb-0 first:pt-0"
+          >
+            <Text className="flex-1 text-foreground font-semibold" numberOfLines={1}>
+              {i + 1}. {r.name}
+            </Text>
+            <Text className="ml-3 text-foreground font-extrabold tabular-nums">
+              {r.km} km
+            </Text>
+          </View>
+        ))}
+        {boardQuery.isLoading && (
+          <Text className="text-muted">Checking the pack…</Text>
+        )}
+        {!boardQuery.isLoading && !boardQuery.data?.length && (
+          <Text className="leading-relaxed text-muted">{t.noRides}</Text>
+        )}
+      </View>
 
-      <Text className="text-2xl font-bold text-foreground mt-6 mb-3">{t.groupRides}</Text>
-      {!eventsQuery.data?.length && <Text className="text-muted mb-3">{t.noEvents}</Text>}
+      <Text className="mt-6 text-2xl font-extrabold tracking-tight text-foreground">
+        {t.groupRides}
+      </Text>
+      <Text className="mt-1 text-muted">
+        RSVP to join the pack — codes are shared on the Ride tab.
+      </Text>
+      {!eventsQuery.data?.length && !eventsQuery.isLoading && (
+        <Text className="mt-3 text-muted">{t.noEvents}</Text>
+      )}
+      {eventsQuery.isLoading && (
+        <Text className="mt-3 text-muted">Loading group rides…</Text>
+      )}
       {(eventsQuery.data ?? []).map((e) => (
-        <View key={e.id} className="py-3 border-b border-muted">
-          <Text className="text-foreground font-semibold">{e.name}</Text>
-          <Text className="text-muted text-sm">
-            {e.place} · {new Date(e.startsAt).toLocaleDateString()}
+        <View key={e.id} className="mt-3 rounded-2xl border border-muted p-4">
+          <Text className="text-foreground font-bold">{e.name}</Text>
+          <Text className="mt-0.5 text-muted text-sm">
+            {[e.place, new Date(e.startsAt).toLocaleDateString()]
+              .filter(Boolean)
+              .join(" · ")}
           </Text>
           {session?.user && (
             <Pressable
               onPress={() => void rsvp.mutateAsync({ eventId: e.id }).then(() => queryClient.refetchQueries()).catch(() => undefined)}
-              className="mt-2 bg-secondary py-2 px-4 rounded-lg self-start"
+              className="mt-3 self-start rounded-lg bg-secondary px-4 py-2.5 active:opacity-70"
             >
-              <Text className="text-foreground font-semibold">{t.rsvp}</Text>
+              <Text className="text-foreground font-bold">{t.rsvp}</Text>
             </Pressable>
           )}
         </View>
       ))}
 
       {session?.user && (
-        <View className="flex-row gap-2 mt-4">
+        <View className="mt-4 flex-row gap-2">
           <TextInput
             value={name}
             onChangeText={setName}
             placeholder={t.newRideName}
-            className="flex-1 bg-secondary text-foreground p-3 rounded-lg"
+            placeholderTextColor="#8A94A0"
+            returnKeyType="done"
+            onSubmitEditing={() => void add()}
+            className="min-h-[48px] flex-1 rounded-xl border border-muted bg-secondary px-4 text-foreground"
           />
-          <Pressable onPress={() => void add()} className="bg-[#FFB300] px-4 rounded-lg justify-center">
-            <Text className="text-black font-bold">{t.add}</Text>
+          <Pressable
+            onPress={() => void add()}
+            className="min-h-[48px] min-w-[64px] items-center justify-center rounded-xl bg-[#FFB300] px-4 active:opacity-70"
+          >
+            <Text className="font-extrabold text-black">{t.add}</Text>
           </Pressable>
         </View>
       )}
 
       {session?.user && (
-        <>
-          <Text className="text-2xl font-bold text-foreground mt-6 mb-1">{t.privacyZones}</Text>
-          <Text className="text-muted mb-3">{t.privacySub}</Text>
+        <View className="mt-6">
+          <Text className="text-2xl font-extrabold tracking-tight text-foreground">
+            {t.privacyZones}
+          </Text>
+          <Text className="mb-3 mt-1 text-muted">{t.privacySub}</Text>
           {(zonesQuery.data ?? []).map((z) => (
-            <View key={z.id} className="flex-row justify-between items-center py-2 border-b border-muted">
-              <Text className="text-foreground font-semibold">
+            <View
+              key={z.id}
+              className="flex-row items-center justify-between border-b border-muted py-2.5"
+            >
+              <Text className="flex-1 text-foreground font-semibold" numberOfLines={1}>
                 {z.name} · {z.radiusM}m
               </Text>
               <Pressable
                 onPress={() => void removeZone.mutateAsync({ id: z.id }).then(() => zonesQuery.refetch()).catch(() => undefined)}
-                className="px-3 py-2"
+                className="ml-3 min-h-[44px] min-w-[44px] items-center justify-center px-3"
               >
-                <Text className="text-red-500 font-bold">{t.delete}</Text>
+                <Text className="font-bold text-red-500">{t.delete}</Text>
               </Pressable>
             </View>
           ))}
-          {!zonesQuery.data?.length && <Text className="text-muted">{t.noZones}</Text>}
-        </>
+          {zonesQuery.isLoading && (
+            <Text className="text-muted">Loading privacy zones…</Text>
+          )}
+          {!zonesQuery.isLoading && !zonesQuery.data?.length && (
+            <Text className="leading-relaxed text-muted">{t.noZones}</Text>
+          )}
+        </View>
       )}
     </Container>
   );

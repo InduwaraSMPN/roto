@@ -274,32 +274,35 @@ export default function RideMap() {
     geometry: { type: "Point" as const, coordinates: [m.lon, m.lat] },
   }));
 
-  const Btn = ({ onPress, color, children, grow = true }: { onPress: () => void; color: string; children: React.ReactNode; grow?: boolean }) => (
+  const Btn = ({ onPress, color, children, grow = true, label }: { onPress: () => void; color: string; children: React.ReactNode; grow?: boolean; label?: string }) => (
     <Pressable
       onPress={onPress}
       disabled={busy !== null}
-      style={{ flex: grow ? 1 : undefined, backgroundColor: color, padding: 16, borderRadius: 14, alignItems: "center", opacity: busy !== null ? 0.6 : 1 }}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: busy !== null }}
+      style={{ flex: grow ? 1 : undefined, backgroundColor: color, padding: 16, borderRadius: ROTO.radius, alignItems: "center", justifyContent: "center", minHeight: 52, opacity: busy !== null ? 0.6 : 1 }}
     >
       {children}
     </Pressable>
   );
-  const BtnText = ({ children }: { children: React.ReactNode }) => (
-    <Text style={{ color: "#fff", fontSize: 16, fontWeight: "700" }}>{children}</Text>
+  const BtnText = ({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) => (
+    <Text style={{ color: dark ? ROTO.signalInk : "#fff", fontSize: 16, fontWeight: "700" }}>{children}</Text>
   );
 
   if (hud) {
     return (
       <Pressable onPress={() => setHud(false)} style={{ flex: 1, backgroundColor: "#000", justifyContent: "center", alignItems: "center", gap: 16, padding: 24, paddingTop: insets.top + 24 }}>
         <Text style={{ color: "#fff", fontSize: 64, ...numerals }}>{hudInfo.speed}</Text>
-        <Text style={{ color: "#888", fontSize: 18 }}>km/h</Text>
+        <Text style={{ color: ROTO.fog, fontSize: 18 }}>km/h</Text>
         <Animated.View style={arrowStyle}>
           <Ionicons name="navigate" size={72} color={ROTO.signal} />
         </Animated.View>
         <Text style={{ color: "#fff", fontSize: 22, textAlign: "center" }}>{hudInfo.instr || t.noRouteHud}</Text>
-        <Text style={{ color: "#fcd34d", fontSize: 28, fontWeight: "700" }}>
+        <Text style={{ color: ROTO.signal, fontSize: 28, fontWeight: "700" }}>
           {hudInfo.distM > 950 ? `${(hudInfo.distM / 1000).toFixed(1)} km` : `${hudInfo.distM} m`}
         </Text>
-        <Text style={{ color: "#555", marginTop: 24 }}>{t.tapExitHud}</Text>
+        <Text style={{ color: ROTO.fog, marginTop: 24 }}>{t.tapExitHud}</Text>
       </Pressable>
     );
   }
@@ -309,33 +312,33 @@ export default function RideMap() {
       <MotoMap>
         <Camera center={COLOMBO} zoom={12} />
         <GeoJSONSource id="pois" data={{ type: "FeatureCollection", features }}>
-          <Layer id="poi-dots" source="pois" type="circle" paint={{ "circle-radius": 7, "circle-color": "#e11d48" }} />
+          <Layer id="poi-dots" source="pois" type="circle" paint={{ "circle-radius": 7, "circle-color": ROTO.signal }} />
           <Layer id="poi-labels" source="pois" type="symbol" layout={{ "text-field": ["get", "name"], "text-size": 11, "text-offset": [0, 1.2] }} />
         </GeoJSONSource>
         <GeoJSONSource id="members" data={{ type: "FeatureCollection", features: memberFeatures }}>
-          <Layer id="member-dots" source="members" type="circle" paint={{ "circle-radius": 8, "circle-color": "#2563eb" }} />
+          <Layer id="member-dots" source="members" type="circle" paint={{ "circle-radius": 8, "circle-color": ROTO.live }} />
           <Layer id="member-labels" source="members" type="symbol" layout={{ "text-field": ["get", "name"], "text-size": 11, "text-offset": [0, 1.2] }} />
         </GeoJSONSource>
         <GeoJSONSource
           id="route"
           data={{ type: "FeatureCollection", features: route ? [{ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: route.coords } }] : [] }}
         >
-          <Layer id="route-line" source="route" type="line" paint={{ "line-color": "#e11d48", "line-width": 4 }} />
+          <Layer id="route-line" source="route" type="line" paint={{ "line-color": ROTO.signal, "line-width": 4 }} />
         </GeoJSONSource>
       </MotoMap>
 
       <View style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: 16, paddingBottom: Math.max(28, insets.bottom + 78), gap: 12 }}>
         <View style={{ flexDirection: "row", gap: 8, justifyContent: "center" }}>
           {LANGS.map((l) => (
-            <Pressable key={l.code} onPress={() => void setLang(l.code)} style={{ paddingVertical: 8, paddingHorizontal: 14, borderRadius: 20, backgroundColor: lang === l.code ? "#1d4ed8" : "#334155" }}>
-              <Text style={{ color: "#fff", fontWeight: "700" }}>{l.label}</Text>
+            <Pressable key={l.code} onPress={() => void setLang(l.code)} accessibilityRole="radio" accessibilityState={{ selected: lang === l.code }} style={{ paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, backgroundColor: lang === l.code ? ROTO.signal : ROTO.tar, minHeight: 44, justifyContent: "center" }}>
+              <Text style={{ color: lang === l.code ? ROTO.signalInk : "#fff", fontWeight: "700" }}>{l.label}</Text>
             </Pressable>
           ))}
         </View>
 
         {!session?.user ? (
           <Link href="/(drawer)" asChild>
-            <Pressable style={{ backgroundColor: "#1e3a8a", padding: 12, borderRadius: ROTO.radius, alignItems: "center" }}>
+            <Pressable style={{ backgroundColor: ROTO.tar, borderWidth: 1, borderColor: ROTO.signal, padding: 14, borderRadius: ROTO.radius, alignItems: "center", minHeight: 52, justifyContent: "center" }}>
               <Text style={{ color: "#fff", fontWeight: "700" }}>{t.signInPrompt}</Text>
             </Pressable>
           </Link>
@@ -360,7 +363,7 @@ export default function RideMap() {
           )}
         </View>
         {wx && (
-          <Text style={{ color: "#fcd34d", textAlign: "center" }}>
+          <Text style={{ color: ROTO.signal, textAlign: "center" }}>
             {wx.temp.toFixed(0)}°C · {t.rainLabel} {wx.rain.toFixed(1)}mm · {t.windLabel} {wx.wind.toFixed(0)}km/h
           </Text>
         )}
@@ -394,80 +397,104 @@ export default function RideMap() {
           </Pressable>
         </Animated.View>
 
-        <View style={{ flexDirection: "row", gap: 12 }}>
-          <Btn onPress={() => void loop()} color="#065f46">
-            <BtnText>{busy === "loop" ? "…" : t.loop}</BtnText>
-          </Btn>
-          <Btn onPress={() => void loadCurated()} color="#065f46">
-            <BtnText>{busy === "routes" ? "…" : t.routes}</BtnText>
-          </Btn>
-          <Btn onPress={() => void importGpx()} color="#334155">
-            <BtnText>{busy === "import" ? "…" : t.import}</BtnText>
-          </Btn>
-          <Btn onPress={() => void reportHazard()} color="#92400e">
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Ionicons name="warning" size={18} color="#fff" />
-              <BtnText>{t.hazard}</BtnText>
-            </View>
-          </Btn>
+        <View style={{ gap: 8 }}>
+          <Text style={{ color: fg, fontSize: 13, fontWeight: "800", letterSpacing: 1 }}>
+            PLAN
+          </Text>
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            <Btn onPress={() => void loop()} color={ROTO.tar} label={t.loop}>
+              <BtnText>{busy === "loop" ? "…" : t.loop}</BtnText>
+            </Btn>
+            <Btn onPress={() => void loadCurated()} color={ROTO.tar} label={t.routes}>
+              <BtnText>{busy === "routes" ? "…" : t.routes}</BtnText>
+            </Btn>
+          </View>
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            <Btn onPress={() => void importGpx()} color={ROTO.tar} label={t.import}>
+              <BtnText>{busy === "import" ? "…" : t.import}</BtnText>
+            </Btn>
+            <Btn onPress={() => void reportHazard()} color={ROTO.tar} label={t.hazard}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Ionicons name="warning" size={18} color={ROTO.signal} />
+                <BtnText>{t.hazard}</BtnText>
+              </View>
+            </Btn>
+          </View>
         </View>
 
-        <View style={{ flexDirection: "row", gap: 12 }}>
-          <Btn onPress={() => void share()} color={groupId ? "#1d4ed8" : "#334155"}>
-            <BtnText>{busy === "share" ? "…" : groupId ? `LIVE ${groupCode} (${memberFeatures.length})` : t.shareLive}</BtnText>
-          </Btn>
-          {!groupId && (
-            <View style={{ flex: 1, flexDirection: "row", gap: 8, alignItems: "center" }}>
-              <TextInput
-                value={joinCode}
-                onChangeText={setJoinCode}
-                placeholder={t.code}
-                autoCapitalize="characters"
-                maxLength={6}
-                placeholderTextColor={muted}
-                style={{ flex: 1, backgroundColor: bg, borderWidth: 1, borderColor: muted, color: fg, padding: 14, borderRadius: 14, fontWeight: "700" }}
-              />
-              <Pressable
-                onPress={() =>
-                  void joinGroup
-                    .mutateAsync({ code: joinCode.trim().toUpperCase() })
-                    .then((g) => {
-                      setGroupId(g.id);
-                      setGroupCode(joinCode.trim().toUpperCase());
-                      setJoinCode("");
-                    })
-                    .catch(() => toast.show({ variant: "danger", label: t.failedJoin }))
-                }
-                style={{ backgroundColor: "#334155", padding: 16, borderRadius: 14 }}
-              >
-                <Text style={{ color: "#fff", fontWeight: "700" }}>{t.join}</Text>
-              </Pressable>
-            </View>
-          )}
+        <View style={{ gap: 8 }}>
+          <Text style={{ color: fg, fontSize: 13, fontWeight: "800", letterSpacing: 1 }}>
+            GROUP
+          </Text>
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            <Btn
+              onPress={() => void share()}
+              color={groupId ? ROTO.live : ROTO.tar}
+              label={t.shareLive}
+            >
+              <BtnText>{busy === "share" ? "…" : groupId ? `LIVE ${groupCode} (${memberFeatures.length})` : t.shareLive}</BtnText>
+            </Btn>
+            {!groupId && (
+              <View style={{ flex: 1, flexDirection: "row", gap: 8, alignItems: "center" }}>
+                <TextInput
+                  value={joinCode}
+                  onChangeText={setJoinCode}
+                  placeholder={t.code}
+                  autoCapitalize="characters"
+                  maxLength={6}
+                  placeholderTextColor={muted}
+                  accessibilityLabel={t.code}
+                  style={{ flex: 1, backgroundColor: bg, borderWidth: 1, borderColor: muted, color: fg, padding: 14, borderRadius: ROTO.radius, fontWeight: "700", minHeight: 52 }}
+                />
+                <Pressable
+                  onPress={() =>
+                    void joinGroup
+                      .mutateAsync({ code: joinCode.trim().toUpperCase() })
+                      .then((g) => {
+                        setGroupId(g.id);
+                        setGroupCode(joinCode.trim().toUpperCase());
+                        setJoinCode("");
+                      })
+                      .catch(() => toast.show({ variant: "danger", label: t.failedJoin }))
+                  }
+                  accessibilityRole="button"
+                  accessibilityLabel={t.join}
+                  style={{ backgroundColor: ROTO.tar, padding: 16, borderRadius: ROTO.radius, minHeight: 52, justifyContent: "center" }}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "700" }}>{t.join}</Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
         </View>
 
-        <View style={{ flexDirection: "row", gap: 12 }}>
-          <Btn onPress={() => crash()} color="#7f1d1d">
-            <BtnText>{t.sos}</BtnText>
-          </Btn>
-          <Btn onPress={() => void run("offline", () => downloadLkRegion("colombo").then(() => {}), t.failedRoute)} color="#1e3a8a">
-            <BtnText>{busy === "offline" ? "…" : t.offlineCmb}</BtnText>
-          </Btn>
-        </View>
+        <View style={{ gap: 8 }}>
+          <Text style={{ color: fg, fontSize: 13, fontWeight: "800", letterSpacing: 1 }}>
+            RIDE
+          </Text>
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            <Btn onPress={() => crash()} color={ROTO.danger} label={t.sos}>
+              <BtnText>{t.sos}</BtnText>
+            </Btn>
+            <Btn onPress={() => void run("offline", () => downloadLkRegion("colombo").then(() => {}), t.failedRoute)} color={ROTO.tar} label={t.offlineCmb}>
+              <BtnText>{busy === "offline" ? "…" : t.offlineCmb}</BtnText>
+            </Btn>
+          </View>
 
-        <View style={{ flexDirection: "row", gap: 12 }}>
-          <Btn onPress={() => void flipSaver()} color={saver ? "#065f46" : "#334155"}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Ionicons name={saver ? "battery-charging" : "battery-half"} size={18} color="#fff" />
-              <BtnText>{saver ? t.saverOn : t.saver}</BtnText>
-            </View>
-          </Btn>
-          <Btn onPress={() => void setHomeHere()} color="#334155">
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Ionicons name="home-outline" size={18} color="#fff" />
-              <BtnText>{busy === "home" ? "…" : `${t.home}${zones.length ? ` (${zones.length})` : ""}`}</BtnText>
-            </View>
-          </Btn>
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            <Btn onPress={() => void flipSaver()} color={saver ? ROTO.go : ROTO.tar} label={saver ? t.saverOn : t.saver}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Ionicons name={saver ? "battery-charging" : "battery-half"} size={18} color="#fff" />
+                <BtnText>{saver ? t.saverOn : t.saver}</BtnText>
+              </View>
+            </Btn>
+            <Btn onPress={() => void setHomeHere()} color={ROTO.tar} label={t.home}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Ionicons name="home-outline" size={18} color="#fff" />
+                <BtnText>{busy === "home" ? "…" : `${t.home}${zones.length ? ` (${zones.length})` : ""}`}</BtnText>
+              </View>
+            </Btn>
+          </View>
         </View>
 
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>

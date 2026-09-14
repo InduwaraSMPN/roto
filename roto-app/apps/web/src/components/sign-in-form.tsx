@@ -10,6 +10,34 @@ import { authClient } from "@/lib/auth-client";
 
 import Loader from "./loader";
 
+function AuthShell({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mx-auto w-full max-w-md px-4 pt-10 pb-12">
+      <div className="mb-6 text-center">
+        <p className="text-lg font-extrabold tracking-tight">
+          ROTO{" "}
+          <span aria-hidden className="text-xs text-muted-foreground">
+            රොටෝ · ரோட்டோ
+          </span>
+        </p>
+        <h1 className="mt-2 text-3xl font-extrabold tracking-tight">{title}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+      </div>
+      <div className="rounded-2xl border bg-card p-6 text-card-foreground">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () => void }) {
   const router = useRouter();
   const { isPending } = authClient.useSession();
@@ -49,9 +77,10 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
-
+    <AuthShell
+      title="Welcome back"
+      subtitle="Sign in to sync rides, SOS contacts, and group sharing."
+    >
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -121,11 +150,10 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
         <Button
           variant="link"
           onClick={onSwitchToSignUp}
-          className="text-indigo-600 hover:text-indigo-800"
         >
           Need an account? Sign Up
         </Button>
       </div>
-    </div>
+    </AuthShell>
   );
 }

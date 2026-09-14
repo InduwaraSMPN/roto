@@ -6,6 +6,9 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@roto-app/ui/components/button";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@roto-app/ui/components/empty";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@roto-app/ui/components/select";
+import { Slider } from "@roto-app/ui/components/slider";
 import { trpc } from "@/utils/trpc";
 import { authClient } from "@/lib/auth-client";
 
@@ -105,7 +108,7 @@ export default function Plan() {
         (m.getSource(id) as maplibregl.GeoJSONSource).setData(geo as never);
       } else {
         m.addSource(id, { type: "geojson", data: geo as never });
-        m.addLayer({ id, type: "line", source: id, paint: { "line-color": "#e11d48", "line-width": 4 } });
+        m.addLayer({ id, type: "line", source: id, paint: { "line-color": "#FFB300", "line-width": 4 } });
       }
       const b = coords.reduce((a, c) => a.extend(c as [number, number]), new maplibregl.LngLatBounds(coords[0] as [number, number], coords[0] as [number, number]));
       m.fitBounds(b, { padding: 40 });
@@ -123,41 +126,138 @@ export default function Plan() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Plan a ride</h1>
-      <div className="flex gap-3 mb-4 flex-wrap items-center">
-        <select value={preset} onChange={(e) => setPreset(e.target.value as keyof typeof PRESETS)} className="border rounded px-3 py-2">
-          {Object.keys(PRESETS).map((k) => (
-            <option key={k}>{k}</option>
-          ))}
-        </select>
-        <label className="flex items-center gap-2">
-          Curvy {Math.round(curvy * 100)}%
-          <input type="range" min={0} max={1} step={0.1} value={curvy} onChange={(e) => setCurvy(Number(e.target.value))} />
-        </label>
-        <Button onClick={() => plan.refetch()} disabled={plan.isFetching} className="font-bold">
-          {plan.isFetching ? "Planning…" : "Plan"}
-        </Button>
-        <Button onClick={() => loop.refetch()} disabled={loop.isFetching} className="font-bold">
-          Loop 60km
-        </Button>
-        <Button variant="outline" onClick={() => fileRef.current?.click()}>
-          Import GPX
-        </Button>
-        <input ref={fileRef} type="file" accept=".gpx" className="hidden" onChange={(e) => void importFile(e.target.files?.[0])} />
-        {shown && (
-          <>
-            <span>
-              {imported ? `imported · ${imported.coords.length} pts` : `${(shown as { engine: string }).engine} · ${shown.km.toFixed(0)} km`}
-            </span>
-            <Button variant="outline" size="sm" onClick={download}>
-              GPX
-            </Button>
-          </>
-        )}
+    <div className="mx-auto w-full max-w-4xl p-4 sm:p-6">
+      <div className="mb-4">
+        <h1 className="text-2xl font-extrabold tracking-tight">Plan a ride</h1>
+        <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">
+          Pick a preset, tune the twistiness, and preview it on the map. Export
+          GPX for the phone — privacy zones trim the start and end on export.
+        </p>
       </div>
-      {plan.error && <p className="text-red-600 mb-3">Planning failed — is the API (:3000) running?</p>}
-      <div ref={mapEl} className="w-full h-[60vh] rounded-xl border" />
+      <div
+        role="group"
+        aria-label="Route controls"
+        className="mb-4 rounded-2xl border bg-card p-4 text-card-foreground"
+      >
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-44 flex-1">
+            <label
+              htmlFor="roto-preset"
+              className="mb-1.5 block text-xs font-semibold text-muted-foreground"
+            >
+              Route preset
+            </label>
+            <Select value={preset} onValueChange={(v) => setPreset(v as keyof typeof PRESETS)}>
+              <SelectTrigger id="roto-preset" aria-label="Route preset" className="h-10 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(PRESETS).map((k) => (
+                  <SelectItem key={k} value={k}>
+                    {k}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="min-w-44 flex-1">
+            <span className="mb-1.5 flex items-center justify-between text-xs font-semibold text-muted-foreground">
+              <span>Twistiness</span>
+              <span className="font-bold tabular-nums text-foreground">
+                {Math.round(curvy * 100)}%
+              </span>
+            </span>
+            <Slider
+              aria-label="Twistiness"
+              min={0}
+              max={100}
+              step={10}
+              value={[Math.round(curvy * 100)]}
+              onValueChange={(v) => setCurvy(((Array.isArray(v) ? v[0] : v) ?? 70) / 100)}
+              className="h-10"
+            />
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Button
+            onClick={() => plan.refetch()}
+            disabled={plan.isFetching || loop.isFetching}
+            className="min-h-10 font-bold"
+          >
+            {plan.isFetching ? "Planning…" : "Plan route"}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => loop.refetch()}
+            disabled={plan.isFetching || loop.isFetching}
+            className="min-h-10 font-bold"
+          >
+            {loop.isFetching ? "Drawing…" : "Loop 60 km"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => fileRef.current?.click()}
+            className="min-h-10"
+          >
+            Import GPX
+          </Button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".gpx"
+            aria-label="Import a GPX file"
+            className="hidden"
+            onChange={(e) => void importFile(e.target.files?.[0])}
+          />
+          {shown && (
+            <>
+              <span
+                aria-live="polite"
+                className="text-sm font-semibold tabular-nums"
+              >
+                {imported
+                  ? `Imported · ${imported.coords.length} pts`
+                  : `${(shown as { engine: string }).engine} · ${shown.km.toFixed(0)} km`}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={download}
+                className="min-h-9"
+              >
+                Export GPX
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+      {(plan.error || loop.error) && (
+        <p role="alert" className="mb-3 text-sm font-medium text-destructive">
+          Planning failed — check the connection and try again. Offline packs on
+          the phone still work.
+        </p>
+      )}
+      <div className="relative">
+        {!shown && !plan.isFetching && !loop.isFetching && (
+          <div className="pointer-events-none absolute inset-x-0 top-4 z-10 flex justify-center px-4">
+            <Empty className="border bg-background/95 py-4 shadow-lg backdrop-blur">
+              <EmptyHeader>
+                <EmptyTitle className="text-base">No route yet</EmptyTitle>
+                <EmptyDescription>Pick a preset and press Plan route — or draw a 60 km loop.</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </div>
+        )}
+        <div
+          ref={mapEl}
+          role="application"
+          aria-label="Route preview map"
+          className="h-[60vh] w-full rounded-2xl border"
+        />
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">
+        Map data © OpenMapTiles © OpenStreetMap contributors
+      </p>
     </div>
   );
 }

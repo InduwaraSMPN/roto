@@ -34,7 +34,7 @@ export default function TabLayout() {
         name="map"
         options={{
           title: "Ride",
-          tabBarIcon: ({ color, size }) => <Ionicons name="map" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="bicycle" size={size} color={color} />,
         }}
       />
       <Tabs.Screen

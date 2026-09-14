@@ -1,4 +1,4 @@
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { Drawer } from "expo-router/drawer";
 import { useThemeColor } from "heroui-native";
@@ -50,8 +50,8 @@ function DrawerLayout() {
             <Text style={{ color: focused ? color : themeColorForeground }}>Ride</Text>
           ),
           drawerIcon: ({ size, color, focused }) => (
-            <MaterialIcons
-              name="border-bottom"
+            <Ionicons
+              name="bicycle"
               size={size}
               color={focused ? color : themeColorForeground}
             />

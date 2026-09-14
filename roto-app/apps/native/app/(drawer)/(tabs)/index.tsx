@@ -1,16 +1,46 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Card } from "heroui-native";
-import { Text, View } from "react-native";
+import { Link } from "expo-router";
+import { Pressable, Text, View } from "react-native";
 
 import { Container } from "@/components/container";
+import { ROTO } from "@/lib/roto-theme";
 
 export default function Home() {
   return (
     <Container className="p-6">
-      <View className="flex-1 justify-center items-center">
-        <Card variant="secondary" className="p-8 items-center">
-          <Card.Title className="text-3xl mb-2">Tab One</Card.Title>
-        </Card>
+      <View className="py-2">
+        <Text className="text-2xl font-extrabold tracking-tight text-foreground">
+          Start here
+        </Text>
+        <Text className="mt-1 text-muted">
+          The Ride tab plans and records. The Rides tab holds challenges, group
+          rides, and privacy zones.
+        </Text>
       </View>
+
+      <Card variant="secondary" className="mt-4 items-center p-8">
+        <View
+          style={{ backgroundColor: ROTO.signal }}
+          className="mb-4 items-center justify-center rounded-full p-4"
+        >
+          <Ionicons name="bicycle" size={32} color={ROTO.signalInk} />
+        </View>
+        <Card.Title className="mb-1 text-xl">Ready to ride?</Card.Title>
+        <Card.Description className="mb-5 text-center">
+          Plan a curvy loop, download the offline pack, then hit START RIDE.
+        </Card.Description>
+        <Link href="/(drawer)/(tabs)/map" asChild>
+          <Pressable
+            style={{ backgroundColor: ROTO.signal }}
+            className="items-center self-stretch rounded-lg px-4 py-4 active:opacity-70"
+          >
+            <Text style={{ color: ROTO.signalInk }} className="font-extrabold">
+              Open the Ride tab
+            </Text>
+          </Pressable>
+        </Link>
+      </Card>
     </Container>
   );
 }

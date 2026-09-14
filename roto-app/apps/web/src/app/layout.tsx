@@ -17,8 +17,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "roto-app",
-  description: "roto-app",
+  title: {
+    default: "Roto — offline-first motorcycle routes for Sri Lanka",
+    template: "%s · Roto",
+  },
+  description:
+    "Curvy LK routes, GPX in and out, crash alerts, live group rides. Free forever, no tracking. English / සිංහල / தமிழ்.",
 };
 
 export default function RootLayout({

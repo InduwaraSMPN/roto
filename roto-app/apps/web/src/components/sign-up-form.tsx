@@ -52,10 +52,23 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
-
-      <form
+    <div className="mx-auto w-full max-w-md px-4 pt-10 pb-12">
+      <div className="mb-6 text-center">
+        <p className="text-lg font-extrabold tracking-tight">
+          ROTO{" "}
+          <span aria-hidden className="text-xs text-muted-foreground">
+            රොටෝ · ரோட்டோ
+          </span>
+        </p>
+        <h1 className="mt-2 text-3xl font-extrabold tracking-tight">
+          Create account
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Free forever. Sync rides, back up SOS contacts, join group rides.
+        </p>
+      </div>
+      <div className="rounded-2xl border bg-card p-6 text-card-foreground">
+        <form
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -140,16 +153,13 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
             </Button>
           )}
         </form.Subscribe>
-      </form>
+        </form>
 
-      <div className="mt-4 text-center">
-        <Button
-          variant="link"
-          onClick={onSwitchToSignIn}
-          className="text-indigo-600 hover:text-indigo-800"
-        >
-          Already have an account? Sign In
-        </Button>
+        <div className="mt-4 text-center">
+          <Button variant="link" onClick={onSwitchToSignIn}>
+            Already have an account? Sign In
+          </Button>
+        </div>
       </div>
     </div>
   );
