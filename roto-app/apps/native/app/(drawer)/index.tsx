@@ -54,30 +54,28 @@ export default function Home() {
           </Chip>
         </View>
 
-        <Card className="p-4">
-          <View className="flex-row items-center">
-            <View
-              className={`w-3 h-3 rounded-full mr-3 ${isConnected ? "bg-success" : "bg-muted"}`}
-            />
-            <View className="flex-1">
-              <Text className="text-foreground font-medium mb-1">TRPC Backend</Text>
-              <Card.Description>
-                {isLoading
-                  ? "Checking connection..."
-                  : isConnected
-                    ? "Connected to API"
-                    : "API Disconnected"}
-              </Card.Description>
-            </View>
-            {isLoading && <Ionicons name="hourglass-outline" size={20} color={mutedColor} />}
-            {!isLoading && isConnected && (
-              <Ionicons name="checkmark-circle" size={20} color={successColor} />
-            )}
-            {!isLoading && !isConnected && (
-              <Ionicons name="close-circle" size={20} color={dangerColor} />
-            )}
+        <View className="flex-row items-center border-t border-muted pt-4">
+          <View
+            className={`w-3 h-3 rounded-full mr-3 ${isConnected ? "bg-success" : "bg-muted"}`}
+          />
+          <View className="flex-1">
+            <Text className="text-foreground font-medium mb-1">TRPC Backend</Text>
+            <Card.Description>
+              {isLoading
+                ? "Checking connection..."
+                : isConnected
+                  ? "Connected to API"
+                  : "API Disconnected"}
+            </Card.Description>
           </View>
-        </Card>
+          {isLoading && <Ionicons name="hourglass-outline" size={20} color={mutedColor} />}
+          {!isLoading && isConnected && (
+            <Ionicons name="checkmark-circle" size={20} color={successColor} />
+          )}
+          {!isLoading && !isConnected && (
+            <Ionicons name="close-circle" size={20} color={dangerColor} />
+          )}
+        </View>
       </Card>
 
       <Card variant="secondary" className="mt-6 p-4">

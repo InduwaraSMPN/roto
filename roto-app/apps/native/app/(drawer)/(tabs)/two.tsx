@@ -42,6 +42,7 @@ export default function Community() {
       {!boardQuery.data?.length && <Text className="text-muted mb-4">{t.noRides}</Text>}
 
       <Text className="text-2xl font-bold text-foreground mt-6 mb-3">{t.groupRides}</Text>
+      {!eventsQuery.data?.length && <Text className="text-muted mb-3">{t.noEvents}</Text>}
       {(eventsQuery.data ?? []).map((e) => (
         <View key={e.id} className="py-3 border-b border-muted">
           <Text className="text-foreground font-semibold">{e.name}</Text>

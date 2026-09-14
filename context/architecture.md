@@ -42,6 +42,7 @@ Goal: free, open-source, offline-first motorcycle app for Sri Lanka. Speed + UI/
 9. Final halves: privacy zones (`privacy_zones` + `privacy.*` setHome/list/remove; `trimEnds` masks start/end on GPX export + suppresses live broadcast inside zones; ⌂ HOME button + Rides-tab manager; proven: set→list→trim 5→3pts) + battery-saver (SecureStore-persisted toggle: Balanced/50m GPS, IMU off, 30s member poll; crash watch never gated).
 10. UI/UX pass: OMT attribution on map (license), ROTO branding (drawer/tabs/home/web hero), theme-aware Ride tab, persisted en/si/ta switcher driving UI+voice (si/ta need native-speaker review), busy spinners + error toasts on all async buttons, SafeArea overlay, HUD SafeArea + translated exit.
 11. shadcn system: web already shadcn — plan/hero now use real `Button` variants; `.dark` tokens overridden to Roto identity (signal-amber primary, asphalt bg, 14px radius); native `roto-theme.ts` mirrors the same roles (CSS vars don't cross to native).
+12. Impeccable pass (skill installed project-scope `.opencode/`, context+polish+craft-floor followed): web hero stats live from DB, eyebrow folded into trilingual display H1, browser surfaces themed (selection/focus/scrollbar), emoji replaced with Ionicons, nested Card flattened, HUD arrow + START press spring with reduced-motion, events empty state, `detect --json` clean on changed web files.
 
 ## Next
 

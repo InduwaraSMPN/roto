@@ -1,12 +1,14 @@
 import { Camera, GeoJSONSource, Layer } from "@maplibre/maplibre-react-native";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
+import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system";
 import * as Location from "expo-location";
 import * as SecureStore from "expo-secure-store";
 import * as Speech from "expo-speech";
 import { Link } from "expo-router";
 import { useToast, useThemeColor } from "heroui-native";
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring } from "react-native-reanimated";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -74,6 +76,25 @@ export default function RideMap() {
     const next = !saver;
     setSaver(next);
     await SecureStore.setItemAsync("roto-saver", next ? "1" : "0").catch(() => undefined);
+  };
+
+  const reduceMotion = useReducedMotion();
+  const arrowDeg = useSharedValue(0);
+  const arrowBase = useRef(0);
+  const pressScale = useSharedValue(1);
+  useEffect(() => {
+    const target = hudInfo.arrowDeg;
+    let delta = ((target - arrowBase.current + 540) % 360) - 180;
+    arrowBase.current += delta;
+    arrowDeg.value = reduceMotion ? arrowBase.current : withSpring(arrowBase.current, { damping: 18, stiffness: 140 });
+  }, [hudInfo.arrowDeg, arrowDeg, reduceMotion]);
+  const arrowStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${arrowDeg.value}deg` }] }));
+  const pressStyle = useAnimatedStyle(() => ({ transform: [{ scale: pressScale.value }] }));
+  const pressIn = () => {
+    pressScale.value = reduceMotion ? 1 : withSpring(0.95, { damping: 20, stiffness: 300 });
+  };
+  const pressOut = () => {
+    pressScale.value = reduceMotion ? 1 : withSpring(1, { damping: 20, stiffness: 300 });
   };
 
   const crash = () => {
@@ -271,7 +292,9 @@ export default function RideMap() {
       <Pressable onPress={() => setHud(false)} style={{ flex: 1, backgroundColor: "#000", justifyContent: "center", alignItems: "center", gap: 16, padding: 24, paddingTop: insets.top + 24 }}>
         <Text style={{ color: "#fff", fontSize: 64, ...numerals }}>{hudInfo.speed}</Text>
         <Text style={{ color: "#888", fontSize: 18 }}>km/h</Text>
-        <Text style={{ color: ROTO.signal, fontSize: 72, transform: [{ rotate: `${hudInfo.arrowDeg}deg` }] }}>▲</Text>
+        <Animated.View style={arrowStyle}>
+          <Ionicons name="navigate" size={72} color={ROTO.signal} />
+        </Animated.View>
         <Text style={{ color: "#fff", fontSize: 22, textAlign: "center" }}>{hudInfo.instr || t.noRouteHud}</Text>
         <Text style={{ color: "#fcd34d", fontSize: 28, fontWeight: "700" }}>
           {hudInfo.distM > 950 ? `${(hudInfo.distM / 1000).toFixed(1)} km` : `${hudInfo.distM} m`}
@@ -330,8 +353,11 @@ export default function RideMap() {
             {recording ? km.toFixed(1) : maxLean > 0 ? maxLean.toFixed(0) + "°" : "—"}
           </Text>
           <Text style={{ color: muted, textAlign: "center", fontSize: 13 }}>
-            {recording ? `km · ${elapsedMin.toFixed(0)} min · ${avgKmh.toFixed(0)} km/h ● ${t.rec}` : maxLean > 0 ? `${t.lastRide} ${t.maxLean}` : t.ready}
+            {recording ? `${elapsedMin.toFixed(0)} min, ${avgKmh.toFixed(0)} km/h` : maxLean > 0 ? `${t.lastRide} ${t.maxLean}` : t.ready}
           </Text>
+          {recording && (
+            <Text style={{ color: ROTO.danger, textAlign: "center", fontSize: 13, fontWeight: "700" }}>● {t.rec}</Text>
+          )}
         </View>
         {wx && (
           <Text style={{ color: "#fcd34d", textAlign: "center" }}>
@@ -347,22 +373,26 @@ export default function RideMap() {
           </Pressable>
         )}
 
-        <Pressable
-          onPress={() => void toggle()}
-          style={{
-            backgroundColor: recording ? ROTO.danger : ROTO.signal,
-            padding: 20,
-            borderRadius: ROTO.radius,
-            alignItems: "center",
-            shadowColor: recording ? undefined : ROTO.signal,
-            shadowOpacity: recording ? 0 : 0.35,
-            shadowRadius: 18,
-          }}
-        >
-          <Text style={{ color: recording ? "#fff" : ROTO.signalInk, fontSize: 20, fontWeight: "800", letterSpacing: 1 }}>
-            {recording ? t.stop : t.startRide}
-          </Text>
-        </Pressable>
+        <Animated.View style={[{ flex: 1 }, pressStyle]}>
+          <Pressable
+            onPress={() => void toggle()}
+            onPressIn={pressIn}
+            onPressOut={pressOut}
+            style={{
+              backgroundColor: recording ? ROTO.danger : ROTO.signal,
+              padding: 20,
+              borderRadius: ROTO.radius,
+              alignItems: "center",
+              shadowColor: recording ? undefined : ROTO.signal,
+              shadowOpacity: recording ? 0 : 0.35,
+              shadowRadius: 18,
+            }}
+          >
+            <Text style={{ color: recording ? "#fff" : ROTO.signalInk, fontSize: 20, fontWeight: "800", letterSpacing: 1 }}>
+              {recording ? t.stop : t.startRide}
+            </Text>
+          </Pressable>
+        </Animated.View>
 
         <View style={{ flexDirection: "row", gap: 12 }}>
           <Btn onPress={() => void loop()} color="#065f46">
@@ -375,7 +405,10 @@ export default function RideMap() {
             <BtnText>{busy === "import" ? "…" : t.import}</BtnText>
           </Btn>
           <Btn onPress={() => void reportHazard()} color="#92400e">
-            <BtnText>⚠</BtnText>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Ionicons name="warning" size={18} color="#fff" />
+              <BtnText>{t.hazard}</BtnText>
+            </View>
           </Btn>
         </View>
 
@@ -424,10 +457,16 @@ export default function RideMap() {
 
         <View style={{ flexDirection: "row", gap: 12 }}>
           <Btn onPress={() => void flipSaver()} color={saver ? "#065f46" : "#334155"}>
-            <BtnText>{saver ? t.saverOn : `🔋 ${t.saver}`}</BtnText>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Ionicons name={saver ? "battery-charging" : "battery-half"} size={18} color="#fff" />
+              <BtnText>{saver ? t.saverOn : t.saver}</BtnText>
+            </View>
           </Btn>
           <Btn onPress={() => void setHomeHere()} color="#334155">
-            <BtnText>{busy === "home" ? "…" : `⌂ ${t.home}${zones.length ? ` (${zones.length})` : ""}`}</BtnText>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Ionicons name="home-outline" size={18} color="#fff" />
+              <BtnText>{busy === "home" ? "…" : `${t.home}${zones.length ? ` (${zones.length})` : ""}`}</BtnText>
+            </View>
           </Btn>
         </View>
 

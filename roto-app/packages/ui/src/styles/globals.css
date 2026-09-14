@@ -114,3 +114,17 @@
     @apply font-sans;
   }
 }
+
+/* Roto browser surfaces: selection, caret, scrollbar, and focus carry the identity */
+::selection {
+  background: oklch(0.84 0.16 84);
+  color: oklch(0.2 0.05 60);
+}
+:focus-visible {
+  outline: 2px solid oklch(0.84 0.16 84);
+  outline-offset: 2px;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.84 0.16 84) transparent;
+}
