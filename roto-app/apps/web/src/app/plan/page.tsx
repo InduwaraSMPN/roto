@@ -36,14 +36,41 @@ const toGpx = (coords: [number, number][], name: string) =>
     .join("")}</trkseg></trk></gpx>`;
 
 export default function Plan() {
-  const [preset, setPreset] = useState<keyof typeof PRESETS>("Colombo → Kandy");
   const [curvy, setCurvy] = useState(0.7);
   const [imported, setImported] = useState<{ coords: [number, number][]; km: number } | null>(null);
+  const [curatedId, setCuratedId] = useState<string | null>(null);
   const mapEl = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const plan = useQuery({ ...trpc.route.plan.queryOptions({ points: [...PRESETS[preset]], curvy }), enabled: false });
+  const curatedList = useQuery(trpc.curated.list.queryOptions({}));
+  const curatedGet = useQuery({
+    ...trpc.curated.get.queryOptions({ id: curatedId ?? "" }),
+    enabled: curatedId !== null,
+  });
+  const curatedCoords = (curatedGet.data?.coords as [number, number][] | undefined) ?? null;
+  // Curated presets come from the DB (Valhalla-generated); static points are the offline fallback.
+  const PRESET_OPTIONS = (curatedList.data ?? []).map((r) => ({ id: r.id, label: r.nameEn }));
+  const preset: string = curatedId ?? "Colombo → Kandy";
+  const setPreset = (v: string) => {
+    const hit = (curatedList.data ?? []).find((r) => r.id === v || r.nameEn === v);
+    if (hit) {
+      setCuratedId(hit.id);
+    } else if (v in PRESETS) {
+      setCuratedId(null);
+    }
+    // Unknown values are ignored so the Select never lands on a dead option.
+  };
+  const fallbackKey = (Object.keys(PRESETS) as (keyof typeof PRESETS)[]).includes(preset as keyof typeof PRESETS)
+    ? (preset as keyof typeof PRESETS)
+    : "Colombo → Kandy";
+  // Stabilized label: curated name, or the static fallback name.
+  const presetLabel =
+    (curatedList.data ?? []).find((r) => r.id === curatedId)?.nameEn ?? fallbackKey;
+  const presetPoints: { lat: number; lon: number }[] =
+    curatedCoords?.map(([lon, lat]) => ({ lat, lon })) ?? [...PRESETS[fallbackKey]];
+
+  const plan = useQuery({ ...trpc.route.plan.queryOptions({ points: presetPoints, curvy }), enabled: false });
   const { data: session } = authClient.useSession();
   const zonesQuery = useQuery({ ...trpc.privacy.list.queryOptions(), enabled: !!session?.user });
   const trim = (coords: [number, number][]): [number, number][] => {
@@ -120,7 +147,7 @@ export default function Plan() {
   const download = () => {
     if (!shown) return;
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([toGpx(trim(shown.coords), preset)], { type: "application/gpx+xml" }));
+    a.href = URL.createObjectURL(new Blob([toGpx(trim(shown.coords), presetLabel)], { type: "application/gpx+xml" }));
     a.download = "roto-ride.gpx";
     a.click();
   };
@@ -147,14 +174,17 @@ export default function Plan() {
             >
               Route preset
             </label>
-            <Select value={preset} onValueChange={(v) => setPreset(v as keyof typeof PRESETS)}>
+            <Select value={preset} onValueChange={(v) => v != null && setPreset(v)}>
               <SelectTrigger id="roto-preset" aria-label="Route preset" className="h-10 w-full">
-                <SelectValue />
+                <SelectValue placeholder={curatedList.isLoading ? "Loading routes…" : "Pick a route"} />
               </SelectTrigger>
               <SelectContent>
-                {Object.keys(PRESETS).map((k) => (
-                  <SelectItem key={k} value={k}>
-                    {k}
+                {(PRESET_OPTIONS.length > 0
+                  ? PRESET_OPTIONS
+                  : Object.keys(PRESETS).map((k) => ({ id: k, label: k }))
+                ).map((o) => (
+                  <SelectItem key={o.id} value={o.id}>
+                    {o.label}
                   </SelectItem>
                 ))}
               </SelectContent>

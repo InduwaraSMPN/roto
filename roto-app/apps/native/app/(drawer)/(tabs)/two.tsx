@@ -5,6 +5,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { Container } from "@/components/container";
 import { authClient } from "@/lib/auth-client";
 import { useLang } from "@/lib/i18n";
+import { ROTO } from "@/lib/roto-theme";
 import { queryClient, trpc } from "@/utils/trpc";
 
 export default function Community() {
@@ -94,16 +95,17 @@ export default function Community() {
             value={name}
             onChangeText={setName}
             placeholder={t.newRideName}
-            placeholderTextColor="#8A94A0"
+            placeholderTextColor={ROTO.fog}
             returnKeyType="done"
             onSubmitEditing={() => void add()}
             className="min-h-[48px] flex-1 rounded-xl border border-muted bg-secondary px-4 text-foreground"
           />
           <Pressable
             onPress={() => void add()}
-            className="min-h-[48px] min-w-[64px] items-center justify-center rounded-xl bg-[#FFB300] px-4 active:opacity-70"
+            style={{ backgroundColor: ROTO.signal }}
+            className="min-h-[48px] min-w-[64px] items-center justify-center rounded-xl px-4 active:opacity-70"
           >
-            <Text className="font-extrabold text-black">{t.add}</Text>
+            <Text style={{ color: ROTO.signalInk }} className="font-extrabold">{t.add}</Text>
           </Pressable>
         </View>
       )}

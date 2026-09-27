@@ -2,7 +2,7 @@ import { createAuthClient } from "better-auth/react";
 
 import { ENV as env } from "../env";
 
-function getServerUrl(url: string) {
+function getServerUrl(url: string | undefined) {
   const processEnv = (
     globalThis as {
       process?: { env?: Record<string, string | undefined> };
@@ -14,7 +14,10 @@ function getServerUrl(url: string) {
       : processEnv.SERVER_URL;
   }
 
-  const normalized = url.endsWith("/") ? url.slice(0, -1) : url;
+  // Next inlines process.env.NEXT_PUBLIC_* at build time; the varlock ENV proxy is
+  // not always hydrated in the client bundle, so prefer the inlined literal.
+  const resolvedUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? url ?? "";
+  const normalized = resolvedUrl.endsWith("/") ? resolvedUrl.slice(0, -1) : resolvedUrl;
 
   if (!normalized.startsWith("/")) {
     return normalized;
