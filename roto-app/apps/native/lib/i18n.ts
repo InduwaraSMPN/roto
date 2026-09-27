@@ -61,6 +61,11 @@ const en = {
   dismiss: "dismiss",
   rainLabel: "rain",
   windLabel: "wind",
+  sectionRide: "Ride",
+  sectionPlan: "Plan",
+  sectionGroup: "Group",
+  sectionOffline: "Offline packs",
+  sectionTools: "Tools",
 };
 
 export type Strings = typeof en;
@@ -115,6 +120,11 @@ const si: Strings = {
   dismiss: "ඉවත් කරන්න",
   rainLabel: "වැස්ස",
   windLabel: "සුළඟ",
+  sectionRide: "ගමන",
+  sectionPlan: "සැලසුම",
+  sectionGroup: "කණ්ඩායම",
+  sectionOffline: "Offline පැකේජ",
+  sectionTools: "මෙවලම්",
 };
 
 const ta: Strings = {
@@ -167,6 +177,11 @@ const ta: Strings = {
   dismiss: "நீக்கு",
   rainLabel: "மழை",
   windLabel: "காற்று",
+  sectionRide: "பயணம்",
+  sectionPlan: "திட்டம்",
+  sectionGroup: "குழு",
+  sectionOffline: "Offline பொதிகள்",
+  sectionTools: "கருவிகள்",
 };
 
 export const STR: Record<Lang, Strings> = { en, si, ta };

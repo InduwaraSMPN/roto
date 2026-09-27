@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Card } from "heroui-native";
+import { Button, Card } from "heroui-native";
 import { Link } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { Container } from "@/components/container";
 import { ROTO } from "@/lib/roto-theme";
@@ -31,14 +31,9 @@ export default function Home() {
           Plan a curvy loop, download the offline pack, then hit START RIDE.
         </Card.Description>
         <Link href="/(drawer)/(tabs)/map" asChild>
-          <Pressable
-            style={{ backgroundColor: ROTO.signal }}
-            className="items-center self-stretch rounded-lg px-4 py-4 active:opacity-70"
-          >
-            <Text style={{ color: ROTO.signalInk }} className="font-extrabold">
-              Open the Ride tab
-            </Text>
-          </Pressable>
+          <Button className="self-stretch">
+            <Button.Label>Open the Ride tab</Button.Label>
+          </Button>
         </Link>
       </Card>
     </Container>

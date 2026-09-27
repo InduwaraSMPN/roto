@@ -1,14 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { Card, Chip, useThemeColor } from "heroui-native";
+import { Button, Card, Chip, Tabs, useThemeColor } from "heroui-native";
 import { Link } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { Container } from "@/components/container";
 import { SignIn } from "@/components/sign-in";
 import { SignUp } from "@/components/sign-up";
 import { authClient } from "@/lib/auth-client";
-import { LANGS, useLang } from "@/lib/i18n";
+import { LANGS, useLang, type Lang } from "@/lib/i18n";
 import { ROTO } from "@/lib/roto-theme";
 import { queryClient, trpc } from "@/utils/trpc";
 
@@ -49,28 +49,16 @@ export default function Home() {
         <Text className="mt-1 text-muted">
           Free offline-first rides for Sri Lanka — no subscription, no tracking.
         </Text>
-        <View className="mt-3 flex-row gap-2" accessibilityRole="radiogroup" accessibilityLabel="Language">
-          {LANGS.map((l) => {
-            const active = lang === l.code;
-            return (
-              <Pressable
-                key={l.code}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: active }}
-                onPress={() => void setLang(l.code)}
-                style={{ backgroundColor: active ? ROTO.signal : undefined }}
-                className={`rounded-lg border border-muted px-3 py-2 ${active ? "border-transparent" : ""}`}
-              >
-                <Text
-                  style={{ color: active ? ROTO.signalInk : undefined }}
-                  className={`text-sm font-bold ${active ? "" : "text-foreground"}`}
-                >
-                  {l.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <Tabs value={lang} onValueChange={(v) => void setLang(v as Lang)} className="mt-3 self-start">
+          <Tabs.List accessibilityLabel="Language">
+            <Tabs.Indicator />
+            {LANGS.map((l) => (
+              <Tabs.Trigger key={l.code} value={l.code}>
+                <Tabs.Label>{l.label}</Tabs.Label>
+              </Tabs.Trigger>
+            ))}
+          </Tabs.List>
+        </Tabs>
       </View>
 
       {session?.user ? (
@@ -81,36 +69,26 @@ export default function Home() {
           <Text className="text-muted text-sm mb-4">{session.user.email}</Text>
           <View className="flex-row gap-2">
             <Link href="/(drawer)/(tabs)/map" asChild>
-              <Pressable
-                style={{ backgroundColor: ROTO.signal }}
-                className="flex-1 items-center rounded-lg px-4 py-3 active:opacity-70"
-              >
-                <Text style={{ color: ROTO.signalInk }} className="font-extrabold">
-                  Plan a ride
-                </Text>
-              </Pressable>
+              <Button className="flex-1">
+                <Button.Label>Plan a ride</Button.Label>
+              </Button>
             </Link>
-            <Pressable
-              className="items-center rounded-lg border border-muted px-4 py-3 active:opacity-70"
+            <Button
+              variant="outline"
               onPress={() => {
                 authClient.signOut();
                 queryClient.invalidateQueries();
               }}
             >
-              <Text className="text-foreground font-semibold">Sign Out</Text>
-            </Pressable>
+              <Button.Label>Sign Out</Button.Label>
+            </Button>
           </View>
         </Card>
       ) : (
         <Link href="/(drawer)/(tabs)/map" asChild>
-          <Pressable
-            style={{ backgroundColor: ROTO.signal }}
-            className="mb-4 items-center rounded-lg px-4 py-4 active:opacity-70"
-          >
-            <Text style={{ color: ROTO.signalInk }} className="text-base font-extrabold">
-              Plan a ride — no account needed
-            </Text>
-          </Pressable>
+          <Button size="lg" className="mb-4">
+            <Button.Label>Plan a ride — no account needed</Button.Label>
+          </Button>
         </Link>
       )}
 

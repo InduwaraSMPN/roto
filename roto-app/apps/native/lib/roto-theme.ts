@@ -3,6 +3,9 @@
 // asphalt/tar=background/card, parchment=foreground, fog=muted-foreground,
 // danger=destructive, radius 14px = --radius 0.875rem. Native can't consume
 // CSS vars, so these consts ARE the native theme — keep values in sync.
+// HeroUI Native components read their own CSS-variable theme (Uniwind), so
+// apps/native/global.css maps that theme's tokens onto these same hex values
+// (dark mode fully, light mode just the accent) — change both together.
 export const ROTO = {
   asphalt: "#0E1318",
   tar: "#1B232C",

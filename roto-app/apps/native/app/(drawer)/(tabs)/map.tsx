@@ -8,14 +8,28 @@ import * as Location from "expo-location";
 import * as SecureStore from "expo-secure-store";
 import * as Speech from "expo-speech";
 import { Link } from "expo-router";
-import { useToast, useThemeColor } from "heroui-native";
+import {
+  Alert,
+  Button,
+  Chip,
+  CloseButton,
+  ControlField,
+  Input,
+  Label,
+  LinkButton,
+  Surface,
+  Tabs,
+  TextField,
+  useToast,
+} from "heroui-native";
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring } from "react-native-reanimated";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { withUniwind } from "uniwind";
 
 import { MotoMap } from "@/components/moto-map";
-import { LANGS, speak, useLang } from "@/lib/i18n";
+import { LANGS, speak, useLang, type Lang } from "@/lib/i18n";
 import { downloadLkRegion } from "@/lib/maps";
 import { clearQueued, listQueued } from "@/lib/ride-queue";
 import { haversineKm, useRideRecorder } from "@/lib/ride-recorder";
@@ -30,32 +44,20 @@ import { queryClient, trpc } from "@/utils/trpc";
 
 const COLOMBO: [number, number] = [79.8612, 6.9271];
 
-const Btn = memo(function Btn({ onPress, color, children, grow = true, label, hint, disabled }: { onPress: () => void; color: string; children: React.ReactNode; grow?: boolean; label?: string; hint?: string; disabled?: boolean }) {
+const StyledIonicons = withUniwind(Ionicons);
+
+const SectionLabel = memo(function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityHint={hint}
-      accessibilityState={{ disabled: !!disabled }}
-      style={{ flex: grow ? 1 : undefined, backgroundColor: color, padding: 16, borderRadius: ROTO.radius, alignItems: "center", justifyContent: "center", minHeight: 52, opacity: disabled ? 0.6 : 1 }}
-    >
+    <Text className="text-muted" style={{ fontSize: 12, fontWeight: "700", letterSpacing: 1, textTransform: "uppercase" }}>
       {children}
-    </Pressable>
+    </Text>
   );
-});
-const BtnText = memo(function BtnText({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) {
-  return <Text style={{ color: dark ? ROTO.signalInk : ROTO.white, fontSize: 16, fontWeight: "700" }}>{children}</Text>;
 });
 
 export default function RideMap() {
   const { lang, setLang, t } = useLang();
   const { toast } = useToast();
   const insets = useSafeAreaInsets();
-  const bg = useThemeColor("background");
-  const fg = useThemeColor("foreground");
-  const muted = useThemeColor("muted");
 
   const poisQuery = useQuery(trpc.rides.pois.queryOptions({}));
   const { data: session } = authClient.useSession();
@@ -101,7 +103,6 @@ export default function RideMap() {
   const reduceMotion = useReducedMotion();
   const arrowDeg = useSharedValue(0);
   const arrowBase = useRef(0);
-  const pressScale = useSharedValue(1);
   useEffect(() => {
     const target = hudInfo.arrowDeg;
     let delta = ((target - arrowBase.current + 540) % 360) - 180;
@@ -109,13 +110,6 @@ export default function RideMap() {
     arrowDeg.value = reduceMotion ? arrowBase.current : withSpring(arrowBase.current, { damping: 18, stiffness: 140 });
   }, [hudInfo.arrowDeg, arrowDeg, reduceMotion]);
   const arrowStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${arrowDeg.value}deg` }] }));
-  const pressStyle = useAnimatedStyle(() => ({ transform: [{ scale: pressScale.value }] }));
-  const pressIn = () => {
-    pressScale.value = reduceMotion ? 1 : withSpring(0.95, { damping: 20, stiffness: 300 });
-  };
-  const pressOut = () => {
-    pressScale.value = reduceMotion ? 1 : withSpring(1, { damping: 20, stiffness: 300 });
-  };
 
   const crash = () => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => undefined);
@@ -312,10 +306,17 @@ export default function RideMap() {
     [route],
   );
 
-
   if (hud) {
+    // ponytail: the HUD is a fixed dark overlay by design (DESIGN.md "Signature
+    // Component") — it stays black-on-signal regardless of the app's light/dark
+    // theme, so it keeps using raw ROTO colors instead of theme tokens.
     return (
-      <Pressable onPress={() => setHud(false)} style={{ flex: 1, backgroundColor: ROTO.black, justifyContent: "center", alignItems: "center", gap: 16, padding: 24, paddingTop: insets.top + 24 }}>
+      <Pressable
+        onPress={() => setHud(false)}
+        accessibilityRole="button"
+        accessibilityLabel={t.tapExitHud}
+        style={{ flex: 1, backgroundColor: ROTO.black, justifyContent: "center", alignItems: "center", gap: 16, padding: 24, paddingTop: insets.top + 24 }}
+      >
         <Text maxFontSizeMultiplier={1.5} style={{ color: ROTO.white, fontSize: 64, ...numerals }}>{hudInfo.speed}</Text>
         <Text style={{ color: ROTO.fog, fontSize: 18 }}>km/h</Text>
         <Animated.View style={arrowStyle}>
@@ -331,7 +332,7 @@ export default function RideMap() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: bg }}>
+    <View className="flex-1 bg-background">
       <MotoMap>
         <Camera center={COLOMBO} zoom={12} />
         <GeoJSONSource id="pois" data={poisGeo}>
@@ -352,38 +353,41 @@ export default function RideMap() {
 
       <ScrollView
         style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
-        contentContainerStyle={{ padding: 16, paddingBottom: Math.max(28, insets.bottom + 78), gap: 12, maxWidth: 560, width: "100%", alignSelf: "center" }}
+        contentContainerStyle={{ padding: 16, paddingBottom: Math.max(28, insets.bottom + 78), gap: 14, maxWidth: 560, width: "100%", alignSelf: "center" }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={{ flexDirection: "row", gap: 8, justifyContent: "center" }}>
-          {LANGS.map((l) => (
-            <Pressable key={l.code} onPress={() => void setLang(l.code)} accessibilityRole="radio" accessibilityState={{ selected: lang === l.code }} style={{ paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, backgroundColor: lang === l.code ? ROTO.signal : ROTO.tar, minHeight: 44, justifyContent: "center" }}>
-              <Text style={{ color: lang === l.code ? ROTO.signalInk : ROTO.white, fontWeight: "700" }}>{l.label}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <Tabs value={lang} onValueChange={(v) => void setLang(v as Lang)} className="self-center">
+          <Tabs.List accessibilityLabel="Language">
+            <Tabs.Indicator />
+            {LANGS.map((l) => (
+              <Tabs.Trigger key={l.code} value={l.code}>
+                <Tabs.Label>{l.label}</Tabs.Label>
+              </Tabs.Trigger>
+            ))}
+          </Tabs.List>
+        </Tabs>
 
         {!session?.user ? (
           <Link href="/(drawer)" asChild>
-            <Pressable style={{ backgroundColor: ROTO.tar, borderWidth: 1, borderColor: ROTO.signal, padding: 14, borderRadius: ROTO.radius, alignItems: "center", minHeight: 52, justifyContent: "center" }}>
-              <Text style={{ color: ROTO.white, fontWeight: "700" }}>{t.signInPrompt}</Text>
-            </Pressable>
+            <Button variant="secondary">
+              <Button.Label>{t.signInPrompt}</Button.Label>
+            </Button>
           </Link>
         ) : (
           <View>
-            <Text style={{ color: fg, textAlign: "center", fontWeight: "600" }}>{session.user.email}</Text>
-            <Text style={{ color: muted, textAlign: "center", fontSize: 13 }}>
+            <Text className="text-foreground text-center font-semibold">{session.user.email}</Text>
+            <Text className="text-muted text-center text-sm">
               {(sosQuery.data ?? []).length} SOS contacts
             </Text>
           </View>
         )}
 
-        <View style={{ alignItems: "center" }}>
-          <Text maxFontSizeMultiplier={1.5} style={{ color: fg, fontSize: 44, textAlign: "center", ...numerals }}>
+        <View className="items-center">
+          <Text maxFontSizeMultiplier={1.5} className="text-foreground text-center" style={{ fontSize: 44, ...numerals }}>
             {recording ? km.toFixed(1) : maxLean > 0 ? maxLean.toFixed(0) + "°" : "—"}
           </Text>
-          <Text style={{ color: muted, textAlign: "center", fontSize: 13 }}>
+          <Text className="text-muted text-center text-sm">
             {recording ? `${elapsedMin.toFixed(0)} min, ${avgKmh.toFixed(0)} km/h` : maxLean > 0 ? `${t.lastRide} ${t.maxLean}` : t.ready}
           </Text>
           {recording && (
@@ -391,150 +395,134 @@ export default function RideMap() {
           )}
         </View>
         {wx && (
-          <Text style={{ color: ROTO.signal, textAlign: "center" }}>
+          <Text className="text-accent text-center">
             {wx.temp.toFixed(0)}°C · {t.rainLabel} {wx.rain.toFixed(1)}mm · {t.windLabel} {wx.wind.toFixed(0)}km/h
           </Text>
         )}
         {route && (
-          <Pressable onPress={() => setRoute(null)} hitSlop={12}>
-            <Text style={{ color: fg, textAlign: "center", fontWeight: "600" }}>{route.name}</Text>
-            <Text style={{ color: muted, textAlign: "center", fontSize: 13 }}>
-              {route.engine} · {route.km.toFixed(0)}km · {t.dismiss}
-            </Text>
-          </Pressable>
+          <Alert status="accent" className="items-center">
+            <Alert.Indicator className="pt-0" />
+            <Alert.Content>
+              <Alert.Title>{route.name}</Alert.Title>
+              <Alert.Description>
+                {route.engine} · {route.km.toFixed(0)}km
+              </Alert.Description>
+            </Alert.Content>
+            <CloseButton onPress={() => setRoute(null)} accessibilityLabel={t.dismiss} />
+          </Alert>
         )}
 
-        <Animated.View style={[{ flex: 1 }, pressStyle]}>
-          <Pressable
-            onPress={() => void toggle()}
-            onPressIn={pressIn}
-            onPressOut={pressOut}
-            style={{
-              backgroundColor: recording ? ROTO.danger : ROTO.signal,
-              padding: 20,
-              borderRadius: ROTO.radius,
-              alignItems: "center",
-              shadowColor: recording ? undefined : ROTO.signal,
-              shadowOpacity: recording ? 0 : 0.35,
-              shadowRadius: 18,
-            }}
-          >
-            <Text style={{ color: recording ? ROTO.white : ROTO.signalInk, fontSize: 20, fontWeight: "800", letterSpacing: 1 }}>
-              {recording ? t.stop : t.startRide}
-            </Text>
-          </Pressable>
-        </Animated.View>
+        {/* One primary action per screen (DESIGN.md "One Signal Rule"): START/STOP. */}
+        <Button size="lg" variant={recording ? "danger" : "primary"} onPress={() => void toggle()}>
+          <Button.Label className="text-lg font-extrabold" style={{ letterSpacing: 1 }}>
+            {recording ? t.stop : t.startRide}
+          </Button.Label>
+        </Button>
 
-        <View style={{ gap: 8 }}>
-          <Text style={{ color: fg, fontSize: 13, fontWeight: "800", letterSpacing: 1 }}>
-            Plan
-          </Text>
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <Btn onPress={() => void loop()} disabled={busy !== null} color={ROTO.tar} label={t.loop}>
-              <BtnText>{busy === "loop" ? "…" : t.loop}</BtnText>
-            </Btn>
-            <Btn onPress={() => void loadCurated()} disabled={busy !== null} color={ROTO.tar} label={t.routes}>
-              <BtnText>{busy === "routes" ? "…" : t.routes}</BtnText>
-            </Btn>
-          </View>
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <Btn onPress={() => void importGpx()} disabled={busy !== null} color={ROTO.tar} label={t.import}>
-              <BtnText>{busy === "import" ? "…" : t.import}</BtnText>
-            </Btn>
-            <Btn onPress={() => void reportHazard()} disabled={busy !== null} color={ROTO.tar} label={t.hazard}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <Ionicons name="warning" size={18} color={ROTO.signal} />
-                <BtnText>{t.hazard}</BtnText>
-              </View>
-            </Btn>
-          </View>
+        <View className="gap-2">
+          <SectionLabel>{t.sectionRide}</SectionLabel>
+          {/* SOS never gates behind busy/saver/login — PRODUCT.md "Safety never sleeps". */}
+          <Button size="lg" variant="danger" onPress={() => crash()} accessibilityLabel={t.sos}>
+            <Button.Label>{t.sos}</Button.Label>
+          </Button>
         </View>
 
-        <View style={{ gap: 8 }}>
-          <Text style={{ color: fg, fontSize: 13, fontWeight: "800", letterSpacing: 1 }}>
-            Group
-          </Text>
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <Btn
+        <Surface variant="secondary" className="gap-3">
+          <SectionLabel>{t.sectionPlan}</SectionLabel>
+          <View className="flex-row gap-3">
+            <Button className="flex-1" variant="secondary" onPress={() => void loop()} isDisabled={busy !== null} accessibilityLabel={t.loop}>
+              <Button.Label>{busy === "loop" ? "…" : t.loop}</Button.Label>
+            </Button>
+            <Button className="flex-1" variant="secondary" onPress={() => void loadCurated()} isDisabled={busy !== null} accessibilityLabel={t.routes}>
+              <Button.Label>{busy === "routes" ? "…" : t.routes}</Button.Label>
+            </Button>
+          </View>
+          <View className="flex-row gap-3">
+            <Button className="flex-1" variant="secondary" onPress={() => void importGpx()} isDisabled={busy !== null} accessibilityLabel={t.import}>
+              <Button.Label>{busy === "import" ? "…" : t.import}</Button.Label>
+            </Button>
+            <Button className="flex-1" variant="secondary" onPress={() => void reportHazard()} isDisabled={busy !== null} accessibilityLabel={t.hazard}>
+              <StyledIonicons name="warning" size={18} className="text-accent" />
+              <Button.Label>{t.hazard}</Button.Label>
+            </Button>
+          </View>
+        </Surface>
+
+        <Surface variant="secondary" className="gap-3">
+          <SectionLabel>{t.sectionGroup}</SectionLabel>
+          {groupId ? (
+            <Chip
+              size="lg"
               onPress={() => void share()}
               disabled={busy !== null}
-              color={groupId ? ROTO.live : ROTO.tar}
-              label={t.shareLive}
+              accessibilityLabel={t.shareLive}
+              style={{ backgroundColor: ROTO.live }}
+              className="self-start"
             >
-              <BtnText>{busy === "share" ? "…" : groupId ? `LIVE ${groupCode} (${memberFeatures.length})` : t.shareLive}</BtnText>
-            </Btn>
-            {!groupId && (
-              <View style={{ flex: 1, flexDirection: "row", gap: 8, alignItems: "center" }}>
-                <TextInput
-                  value={joinCode}
-                  onChangeText={setJoinCode}
-                  placeholder={t.code}
-                  autoCapitalize="characters"
-                  maxLength={6}
-                  placeholderTextColor={muted}
-                  accessibilityLabel={t.code}
-                  style={{ flex: 1, backgroundColor: bg, borderWidth: 1, borderColor: muted, color: fg, padding: 14, borderRadius: ROTO.radius, fontWeight: "700", minHeight: 52 }}
-                />
-                <Pressable
-                  onPress={() =>
-                    void joinGroup
-                      .mutateAsync({ code: joinCode.trim().toUpperCase() })
-                      .then((g) => {
-                        setGroupId(g.id);
-                        setGroupCode(joinCode.trim().toUpperCase());
-                        setJoinCode("");
-                      })
-                      .catch(() => toast.show({ variant: "danger", label: t.failedJoin }))
-                  }
-                  accessibilityRole="button"
-                  accessibilityLabel={t.join}
-                  style={{ backgroundColor: ROTO.tar, padding: 16, borderRadius: ROTO.radius, minHeight: 52, justifyContent: "center" }}
-                >
-                  <Text style={{ color: ROTO.white, fontWeight: "700" }}>{t.join}</Text>
-                </Pressable>
+              <Chip.Label style={{ color: ROTO.white }} className="font-extrabold">
+                {busy === "share" ? "…" : `LIVE ${groupCode} (${memberFeatures.length})`}
+              </Chip.Label>
+            </Chip>
+          ) : (
+            <>
+              <Button variant="secondary" onPress={() => void share()} isDisabled={busy !== null} accessibilityLabel={t.shareLive}>
+                <Button.Label>{busy === "share" ? "…" : t.shareLive}</Button.Label>
+              </Button>
+              <View className="flex-row gap-2">
+                <TextField className="flex-1">
+                  <Input
+                    value={joinCode}
+                    onChangeText={setJoinCode}
+                    placeholder={t.code}
+                    autoCapitalize="characters"
+                    maxLength={6}
+                    accessibilityLabel={t.code}
+                  />
+                </TextField>
+                <Button variant="secondary" onPress={() => void join()} isDisabled={busy !== null} accessibilityLabel={t.join}>
+                  <Button.Label>{t.join}</Button.Label>
+                </Button>
               </View>
-            )}
-          </View>
-        </View>
+            </>
+          )}
+        </Surface>
 
-        <View style={{ gap: 8 }}>
-          <Text style={{ color: fg, fontSize: 13, fontWeight: "800", letterSpacing: 1 }}>
-            Ride
-          </Text>
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <Btn onPress={() => crash()} disabled={busy !== null} color={ROTO.danger} label={t.sos}>
-              <BtnText>{t.sos}</BtnText>
-            </Btn>
-            <Btn onPress={() => void run("offline", () => downloadLkRegion("colombo").then(() => {}), t.failedRoute)} disabled={busy !== null} color={ROTO.tar} label={t.offlineCmb}>
-              <BtnText>{busy === "offline" ? "…" : t.offlineCmb}</BtnText>
-            </Btn>
-          </View>
+        <Surface variant="secondary" className="gap-3">
+          <SectionLabel>{t.sectionOffline}</SectionLabel>
+          <Button
+            variant="secondary"
+            onPress={() => void run("offline", () => downloadLkRegion("colombo").then(() => {}), t.failedRoute)}
+            isDisabled={busy !== null}
+            accessibilityLabel={t.offlineCmb}
+          >
+            <Button.Label>{busy === "offline" ? "…" : t.offlineCmb}</Button.Label>
+          </Button>
+        </Surface>
 
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <Btn onPress={() => void flipSaver()} disabled={busy !== null} color={saver ? ROTO.go : ROTO.tar} label={saver ? t.saverOn : t.saver}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <Ionicons name={saver ? "battery-charging" : "battery-half"} size={18} color={ROTO.white} />
-                <BtnText>{saver ? t.saverOn : t.saver}</BtnText>
-              </View>
-            </Btn>
-            <Btn onPress={() => void setHomeHere()} disabled={busy !== null} color={ROTO.tar} label={t.home}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <Ionicons name="home-outline" size={18} color={ROTO.white} />
-                <BtnText>{busy === "home" ? "…" : `${t.home}${zones.length ? ` (${zones.length})` : ""}`}</BtnText>
-              </View>
-            </Btn>
-          </View>
-        </View>
+        <Surface variant="secondary" className="gap-3">
+          <SectionLabel>{t.sectionTools}</SectionLabel>
+          <ControlField isSelected={saver} onSelectedChange={() => void flipSaver()} isDisabled={busy !== null}>
+            <StyledIonicons name={saver ? "battery-charging" : "battery-half"} size={18} className="text-foreground mr-2" />
+            <View className="flex-1">
+              <Label>{saver ? t.saverOn : t.saver}</Label>
+            </View>
+            <ControlField.Indicator />
+          </ControlField>
+          <Button variant="secondary" onPress={() => void setHomeHere()} isDisabled={busy !== null} accessibilityLabel={t.home}>
+            <StyledIonicons name="home-outline" size={18} className="text-foreground" />
+            <Button.Label>{busy === "home" ? "…" : `${t.home}${zones.length ? ` (${zones.length})` : ""}`}</Button.Label>
+          </Button>
+        </Surface>
 
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <Pressable onPress={() => void syncQueued().catch(() => undefined)} hitSlop={12}>
-            <Text style={{ color: ROTO.sky }}>{t.syncQueued}</Text>
-          </Pressable>
-          <Pressable onPress={() => setHud(true)} hitSlop={12}>
-            <Text style={{ color: ROTO.sky, fontWeight: "700" }}>{t.rideHud}</Text>
-          </Pressable>
+        <View className="flex-row items-center justify-between">
+          <LinkButton size="sm" hitSlop={12} onPress={() => void syncQueued().catch(() => undefined)}>
+            <LinkButton.Label>{t.syncQueued}</LinkButton.Label>
+          </LinkButton>
+          <LinkButton size="sm" hitSlop={12} onPress={() => setHud(true)}>
+            <LinkButton.Label className="font-bold">{t.rideHud}</LinkButton.Label>
+          </LinkButton>
         </View>
-        <Text style={{ color: muted, fontSize: 11, textAlign: "right" }}>{t.attribution}</Text>
+        <Text className="text-muted text-right" style={{ fontSize: 11 }}>{t.attribution}</Text>
       </ScrollView>
     </View>
   );

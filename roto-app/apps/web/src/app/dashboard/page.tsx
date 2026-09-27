@@ -18,12 +18,10 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 pt-6 pb-12">
-      <div className="mb-4">
-        <h1 className="text-2xl font-extrabold tracking-tight">Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Welcome back, {session.user.name} — here&apos;s your riding picture.
-        </p>
+    <div className="mx-auto w-full max-w-6xl px-4 pt-10 pb-16 sm:px-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-black tracking-tight">Your riding</h1>
+        <p className="mt-2 text-muted-foreground">Signed in as {session.user.name}.</p>
       </div>
       <Dashboard session={session} />
     </div>

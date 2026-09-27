@@ -1,8 +1,26 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
+import { CalendarDays, ShieldCheck } from "lucide-react";
+
+import { Badge } from "@roto-app/ui/components/badge";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@roto-app/ui/components/card";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@roto-app/ui/components/empty";
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemMedia,
+  ItemTitle,
+} from "@roto-app/ui/components/item";
+import { Progress } from "@roto-app/ui/components/progress";
+import { Skeleton } from "@roto-app/ui/components/skeleton";
+import { cn } from "@roto-app/ui/lib/utils";
 
 import type { authClient } from "@/lib/auth-client";
 import { trpc } from "@/utils/trpc";
+
+const MONTH_TARGET_KM = 500;
 
 export default function Dashboard({
   session,
@@ -21,144 +39,156 @@ export default function Dashboard({
 
   const myRides = rides.data ?? [];
   const totalKm = myRides.reduce((sum, ride) => sum + (ride.distanceKm ?? 0), 0);
-  const bestLean = myRides.reduce(
-    (best, ride) => Math.max(best, ride.maxLeanDeg ?? 0),
-    0,
-  );
-  const rank =
-    (leaderboard.data ?? []).findIndex(
-      (entry) => entry.name === session.user.name,
-    ) + 1;
+  const bestLean = myRides.reduce((best, ride) => Math.max(best, ride.maxLeanDeg ?? 0), 0);
+  const board = leaderboard.data ?? [];
+  const rankIndex = board.findIndex((entry) => entry.name === session.user.name);
+  const myMonthKm = rankIndex >= 0 ? (board[rankIndex]?.km ?? 0) : 0;
 
   return (
-    <div className="grid gap-4">
-      <section
-        aria-labelledby="dash-rides"
-        className="rounded-2xl border bg-card p-5 text-card-foreground"
-      >
-        <h2 id="dash-rides" className="text-lg font-bold tracking-tight">
+    <div className="grid gap-6">
+      <section aria-labelledby="dash-rides" className="border-y py-6">
+        <h2 id="dash-rides" className="sr-only">
           Your rides
         </h2>
         {rides.isLoading ? (
-          <p className="mt-2 text-sm text-muted-foreground">
-            Loading your rides…
-          </p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Skeleton className="h-16" />
+            <Skeleton className="h-16" />
+            <Skeleton className="h-16" />
+          </div>
         ) : rides.isError ? (
-          <p className="mt-2 text-sm text-muted-foreground">
-            Couldn&apos;t load rides. Check the connection and try again.
+          <p className="text-sm text-muted-foreground">
+            Couldn&apos;t load your rides. Check the connection and reload the page.
           </p>
         ) : myRides.length === 0 ? (
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            No rides synced yet. Record a ride in the app, then sync — it will
-            land here with distance and lean.
-          </p>
+          <Empty className="p-0 md:p-0">
+            <EmptyHeader>
+              <EmptyTitle>No rides synced yet</EmptyTitle>
+              <EmptyDescription>
+                Record a ride in the app and sync it. Distance and lean land here.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
-          <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <dl className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <div>
-              <dt className="text-xs font-semibold text-muted-foreground">
-                Total distance
-              </dt>
-              <dd className="text-2xl font-extrabold tabular-nums">
-                {totalKm.toFixed(0)} km
+              <dt className="text-sm text-muted-foreground">Total distance</dt>
+              <dd className="numerals text-4xl">
+                {totalKm.toFixed(0)}
+                <span className="ml-1 text-base font-semibold text-muted-foreground">km</span>
               </dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold text-muted-foreground">
-                Rides synced
-              </dt>
-              <dd className="text-2xl font-extrabold tabular-nums">
-                {myRides.length}
-              </dd>
+              <dt className="text-sm text-muted-foreground">Rides synced</dt>
+              <dd className="numerals text-4xl">{myRides.length}</dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold text-muted-foreground">
-                Best lean
-              </dt>
-              <dd className="text-2xl font-extrabold tabular-nums">
-                {bestLean > 0 ? `${bestLean.toFixed(0)}°` : "—"}
-              </dd>
+              <dt className="text-sm text-muted-foreground">Best lean</dt>
+              <dd className="numerals text-4xl">{bestLean > 0 ? `${bestLean.toFixed(0)}°` : "–"}</dd>
             </div>
           </dl>
         )}
       </section>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <section
-          aria-labelledby="dash-month"
-          className="rounded-2xl border bg-card p-5 text-card-foreground"
-        >
-          <div className="mb-2 flex items-baseline justify-between gap-3">
-            <h2 id="dash-month" className="text-lg font-bold tracking-tight">
-              This month
-            </h2>
-            <span className="text-xs font-semibold text-muted-foreground">
-              Target 500 km
-            </span>
-          </div>
-          {leaderboard.isLoading ? (
-            <p className="text-sm text-muted-foreground">Checking the pack…</p>
-          ) : (leaderboard.data ?? []).length === 0 ? (
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              Nobody has logged kilometres yet. Be the first.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {rank > 0 && (
-                <p className="text-sm font-semibold">
-                  You&apos;re #{rank} this month.
-                </p>
-              )}
-              <ol className="space-y-1.5">
-                {(leaderboard.data ?? []).slice(0, 5).map((entry, index) => (
-                  <li
-                    key={`${entry.name}-${index}`}
-                    className="flex items-center justify-between gap-3 text-sm"
-                  >
-                    <span className="min-w-0 truncate font-semibold">
-                      {index + 1}. {entry.name}
-                    </span>
-                    <span className="shrink-0 font-bold tabular-nums">
-                      {entry.km} km
-                    </span>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-bold">This month</CardTitle>
+            <CardDescription>
+              {rankIndex >= 0
+                ? `You're number ${rankIndex + 1}, ${myMonthKm} of ${MONTH_TARGET_KM} km.`
+                : `Log a ride to join the ${MONTH_TARGET_KM} km challenge.`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {leaderboard.isLoading ? (
+              <div className="grid gap-4">
+                <Skeleton className="h-8" />
+                <Skeleton className="h-8" />
+              </div>
+            ) : board.length === 0 ? (
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Nobody has logged kilometres yet. Be the first.
+              </p>
+            ) : (
+              <ol className="grid gap-4">
+                {board.slice(0, 5).map((entry, index) => (
+                  <li key={`${entry.name}-${index}`}>
+                    <Progress
+                      value={Math.min(100, (entry.km / MONTH_TARGET_KM) * 100)}
+                      aria-label={entry.name}
+                    >
+                      <span className="flex w-full items-baseline justify-between gap-3 text-sm">
+                        <span
+                          className={cn(
+                            "min-w-0 truncate font-semibold",
+                            index === rankIndex && "text-primary",
+                          )}
+                        >
+                          <span className="numerals mr-2 text-muted-foreground">{index + 1}</span>
+                          {entry.name}
+                        </span>
+                        <span className="numerals shrink-0">{entry.km} km</span>
+                      </span>
+                    </Progress>
                   </li>
                 ))}
               </ol>
-            </div>
-          )}
-        </section>
+            )}
+          </CardContent>
+        </Card>
 
-        <section
-          aria-labelledby="dash-events"
-          className="rounded-2xl border bg-card p-5 text-card-foreground"
-        >
-          <h2 id="dash-events" className="mb-2 text-lg font-bold tracking-tight">
-            Group rides
-          </h2>
-          {events.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading events…</p>
-          ) : (events.data ?? []).length === 0 ? (
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              Nothing planned. Start one from the app&apos;s Rides tab.
-            </p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {(events.data ?? []).slice(0, 5).map((event) => (
-                <li key={event.id} className="py-2.5">
-                  <p className="truncate text-sm font-semibold">{event.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {[event.place, new Date(event.startsAt).toLocaleDateString()]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-bold">Group rides</CardTitle>
+            <CardDescription>RSVP and share live positions from the Rides tab in the app.</CardDescription>
+            {(events.data ?? []).length > 0 && (
+              <CardAction>
+                <Badge variant="secondary" className="numerals">
+                  {events.data?.length}
+                </Badge>
+              </CardAction>
+            )}
+          </CardHeader>
+          <CardContent>
+            {events.isLoading ? (
+              <div className="grid gap-3">
+                <Skeleton className="h-12" />
+                <Skeleton className="h-12" />
+              </div>
+            ) : (events.data ?? []).length === 0 ? (
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Nothing planned. Start one from the Rides tab in the app.
+              </p>
+            ) : (
+              <ItemGroup className="-mx-3 gap-0 has-data-[size=sm]:gap-0">
+                {(events.data ?? []).slice(0, 5).map((event) => (
+                  <Item key={event.id} size="sm" role="listitem">
+                    <ItemMedia variant="icon" className="text-muted-foreground">
+                      <CalendarDays />
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle className="font-semibold">{event.name}</ItemTitle>
+                      <ItemDescription>
+                        {new Date(event.startsAt).toLocaleDateString(undefined, {
+                          weekday: "short",
+                          day: "numeric",
+                          month: "short",
+                        })}
+                        {event.place ? `, ${event.place}` : ""}
+                      </ItemDescription>
+                    </ItemContent>
+                  </Item>
+                ))}
+              </ItemGroup>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Privacy zones stay on your phone — zone starts and ends never sync.
+      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+        <ShieldCheck className="size-4 shrink-0" />
+        Privacy zones stay on your phone. Ride starts and ends inside them never sync.
       </p>
     </div>
   );

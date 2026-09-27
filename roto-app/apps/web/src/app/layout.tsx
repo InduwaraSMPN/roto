@@ -1,19 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Noto_Sans_Sinhala, Noto_Sans_Tamil, Overpass } from "next/font/google";
 
 import "../index.css";
 import Header from "@/components/header";
 import Providers from "@/components/providers";
 import PwaRegistration from "@/components/pwa-registration";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Overpass is the open descendant of Highway Gothic, the road-sign face.
+const overpass = Overpass({
+  variable: "--font-overpass",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const sinhala = Noto_Sans_Sinhala({
+  variable: "--font-sinhala",
+  subsets: ["sinhala"],
+});
+
+const tamil = Noto_Sans_Tamil({
+  variable: "--font-tamil",
+  subsets: ["tamil"],
 });
 
 export const metadata: Metadata = {
@@ -31,14 +37,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${overpass.variable} ${sinhala.variable} ${tamil.variable}`}
+    >
+      <body className="antialiased">
         <PwaRegistration />
 
         <Providers>
-          <div className="grid grid-rows-[auto_1fr] h-svh">
+          <div className="grid min-h-svh grid-rows-[auto_1fr]">
             <Header />
-            {children}
+            <main>{children}</main>
           </div>
         </Providers>
       </body>

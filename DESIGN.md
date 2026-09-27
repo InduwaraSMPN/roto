@@ -13,18 +13,18 @@ colors:
   live: "#2563EB"
 typography:
   display:
-    fontFamily: "Geist, Inter Variable, Noto Sans Sinhala, Noto Sans Tamil, system-ui, sans-serif"
+    fontFamily: "Overpass, Noto Sans Sinhala, Noto Sans Tamil, system-ui, sans-serif"
     fontSize: "clamp(2.5rem, 7vw, 3.75rem)"
     fontWeight: 800
     lineHeight: 1.05
     letterSpacing: "-0.02em"
   body:
-    fontFamily: "Inter Variable, Noto Sans Sinhala, Noto Sans Tamil, system-ui, sans-serif"
+    fontFamily: "Overpass, Noto Sans Sinhala, Noto Sans Tamil, system-ui, sans-serif"
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.6
   label:
-    fontFamily: "Inter Variable, system-ui, sans-serif"
+    fontFamily: "Overpass, system-ui, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 600
     lineHeight: 1.4
@@ -74,7 +74,7 @@ Roto is an offline-first motorcycle companion for Sri Lanka, on web (Next.js pla
 - **Tar** (#1B232C): dark card/surface. Web `.dark --card`; native `ROTO.tar`.
 - **Parchment** (#F2EFE6): dark-mode foreground. Native `ROTO.parchment`.
 - **Fog** (#8A94A0): muted/secondary text on dark. Native `ROTO.fog`; never body copy, never placeholders below 4.5:1.
-- **Light surfaces**: stock shadcn white/gray scale (`packages/ui/src/styles/globals.css` `:root`). Supported but secondary; signal yellow stays the primary in both.
+- **Light surfaces**: cool road-sign white (#F5F7F9 background, #FFFFFF cards, #525C68 muted text), never cream. Signal stays the primary; the focus ring darkens to #B37D00 to clear 3:1 on white. The home route tile stays asphalt in both themes.
 
 ### Named Rules
 
@@ -83,8 +83,7 @@ Roto is an offline-first motorcycle companion for Sri Lanka, on web (Next.js pla
 
 ## Typography
 
-**Display Font:** Geist (web) with Inter Variable fallback (with Noto Sans Sinhala / Noto Sans Tamil for si/ta).
-**Body Font:** Inter Variable (with Noto Sans Sinhala / Noto Sans Tamil).
+**Display and Body Font:** Overpass (web), the open descendant of Highway Gothic, the road-sign face. One family, weight carries hierarchy (900 wordmark, 800 numerals, 700 titles, 400 body). Noto Sans Sinhala / Noto Sans Tamil for si/ta. Native uses the system font.
 **Label/Mono Font:** System sans for labels; tabular-nums for all measurements (native `numerals`: tabular-nums + weight 800). Monospace only for code/data (GPX snippets, group codes).
 
 **Character:** Heavyweight display (800, tight tracking) over quiet body. Controls shout; paragraphs whisper.

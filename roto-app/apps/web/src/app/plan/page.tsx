@@ -5,10 +5,16 @@ import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 
+import { Download, RefreshCcw, TriangleAlert, Upload } from "lucide-react";
+
+import { Alert, AlertDescription, AlertTitle } from "@roto-app/ui/components/alert";
 import { Button } from "@roto-app/ui/components/button";
+import { Card, CardContent } from "@roto-app/ui/components/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@roto-app/ui/components/empty";
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@roto-app/ui/components/field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@roto-app/ui/components/select";
 import { Slider } from "@roto-app/ui/components/slider";
+import { Spinner } from "@roto-app/ui/components/spinner";
 import { trpc } from "@/utils/trpc";
 import { authClient } from "@/lib/auth-client";
 
@@ -144,6 +150,16 @@ export default function Plan() {
     else m.once("load", draw);
   }, [shown]);
 
+  // Home links here with ?route=<curated id>. Read once on mount; useSearchParams would force a Suspense boundary.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("route");
+    if (id) setCuratedId(id);
+  }, []);
+
+  const busy = plan.isFetching || loop.isFetching;
+  const presetItems =
+    PRESET_OPTIONS.length > 0 ? PRESET_OPTIONS : Object.keys(PRESETS).map((k) => ({ id: k, label: k }));
+
   const download = () => {
     if (!shown) return;
     const a = document.createElement("a");
@@ -153,84 +169,74 @@ export default function Plan() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-4xl p-4 sm:p-6">
-      <div className="mb-4">
-        <h1 className="text-2xl font-extrabold tracking-tight">Plan a ride</h1>
-        <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">
-          Pick a preset, tune the twistiness, and preview it on the map. Export
-          GPX for the phone — privacy zones trim the start and end on export.
-        </p>
-      </div>
-      <div
-        role="group"
-        aria-label="Route controls"
-        className="mb-4 rounded-2xl border bg-card p-4 text-card-foreground"
-      >
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="min-w-44 flex-1">
-            <label
-              htmlFor="roto-preset"
-              className="mb-1.5 block text-xs font-semibold text-muted-foreground"
-            >
-              Route preset
-            </label>
-            <Select value={preset} onValueChange={(v) => v != null && setPreset(v)}>
-              <SelectTrigger id="roto-preset" aria-label="Route preset" className="h-10 w-full">
-                <SelectValue placeholder={curatedList.isLoading ? "Loading routes…" : "Pick a route"} />
-              </SelectTrigger>
-              <SelectContent>
-                {(PRESET_OPTIONS.length > 0
-                  ? PRESET_OPTIONS
-                  : Object.keys(PRESETS).map((k) => ({ id: k, label: k }))
-                ).map((o) => (
-                  <SelectItem key={o.id} value={o.id}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="min-w-44 flex-1">
-            <span className="mb-1.5 flex items-center justify-between text-xs font-semibold text-muted-foreground">
-              <span>Twistiness</span>
-              <span className="font-bold tabular-nums text-foreground">
-                {Math.round(curvy * 100)}%
-              </span>
-            </span>
-            <Slider
-              aria-label="Twistiness"
-              min={0}
-              max={100}
-              step={10}
-              value={[Math.round(curvy * 100)]}
-              onValueChange={(v) => setCurvy(((Array.isArray(v) ? v[0] : v) ?? 70) / 100)}
-              className="h-10"
-            />
-          </div>
+    <div className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[22rem_1fr] lg:py-8">
+      <aside className="flex flex-col gap-6">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight">Plan a ride</h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Pick a road, set how twisty it should be, then send the GPX to your phone. Privacy zones trim
+            the start and end before the file leaves this page.
+          </p>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Button
-            onClick={() => plan.refetch()}
-            disabled={plan.isFetching || loop.isFetching}
-            className="min-h-10 font-bold"
-          >
-            {plan.isFetching ? "Planning…" : "Plan route"}
+
+        <Card size="sm">
+          <CardContent>
+            <FieldGroup className="gap-6">
+              <Field>
+                <FieldLabel htmlFor="roto-preset">Route</FieldLabel>
+                <Select
+                  value={preset}
+                  items={presetItems.map((o) => ({ value: o.id, label: o.label }))}
+                  onValueChange={(v) => v != null && setPreset(v)}
+                >
+                  <SelectTrigger id="roto-preset" className="h-10 w-full">
+                    <SelectValue placeholder={curatedList.isLoading ? "Loading routes…" : "Pick a route"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {presetItems.map((o) => (
+                      <SelectItem key={o.id} value={o.id}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FieldDescription>Curated roads come from the server. Three built-in ones work offline.</FieldDescription>
+              </Field>
+              <Field>
+                <div className="flex items-baseline justify-between">
+                  <FieldLabel id="roto-curvy-label">Twistiness</FieldLabel>
+                  <span className="numerals text-lg">{Math.round(curvy * 100)}%</span>
+                </div>
+                <Slider
+                  aria-labelledby="roto-curvy-label"
+                  min={0}
+                  max={100}
+                  step={10}
+                  value={[Math.round(curvy * 100)]}
+                  onValueChange={(v) => setCurvy(((Array.isArray(v) ? v[0] : v) ?? 70) / 100)}
+                  className="py-2"
+                />
+                <FieldDescription>Higher prefers hill roads over main roads.</FieldDescription>
+              </Field>
+            </FieldGroup>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-2">
+          <Button size="lg" onClick={() => plan.refetch()} disabled={busy} className="h-11 text-base font-bold">
+            {plan.isFetching && <Spinner />}
+            {plan.isFetching ? "Planning" : "Plan route"}
           </Button>
-          <Button
-            variant="secondary"
-            onClick={() => loop.refetch()}
-            disabled={plan.isFetching || loop.isFetching}
-            className="min-h-10 font-bold"
-          >
-            {loop.isFetching ? "Drawing…" : "Loop 60 km"}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => fileRef.current?.click()}
-            className="min-h-10"
-          >
-            Import GPX
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="secondary" size="lg" onClick={() => loop.refetch()} disabled={busy}>
+              {loop.isFetching ? <Spinner /> : <RefreshCcw />}
+              {loop.isFetching ? "Drawing" : "60 km loop"}
+            </Button>
+            <Button variant="outline" size="lg" onClick={() => fileRef.current?.click()}>
+              <Upload />
+              Import GPX
+            </Button>
+          </div>
           <input
             ref={fileRef}
             type="file"
@@ -239,55 +245,62 @@ export default function Plan() {
             className="hidden"
             onChange={(e) => void importFile(e.target.files?.[0])}
           />
-          {shown && (
-            <>
-              <span
-                aria-live="polite"
-                className="text-sm font-semibold tabular-nums"
-              >
-                {imported
-                  ? `Imported · ${imported.coords.length} pts`
-                  : `${(shown as { engine: string }).engine} · ${shown.km.toFixed(0)} km`}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={download}
-                className="min-h-9"
-              >
+        </div>
+
+        {(plan.error || loop.error) && (
+          <Alert variant="destructive">
+            <TriangleAlert />
+            <AlertTitle>Couldn&apos;t plan this route</AlertTitle>
+            <AlertDescription>
+              Check the connection and try again. Offline packs on the phone still work.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {shown && (
+          <Card size="sm" aria-live="polite">
+            <CardContent className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p className="numerals text-3xl">
+                  {imported ? imported.coords.length : shown.km.toFixed(0)}
+                  <span className="ml-1 text-sm font-semibold text-muted-foreground">
+                    {imported ? "points" : "km"}
+                  </span>
+                </p>
+                <p className="truncate text-sm text-muted-foreground">
+                  {imported ? "Imported GPX" : `${presetLabel}, via ${(shown as { engine: string }).engine}`}
+                </p>
+              </div>
+              <Button variant="outline" onClick={download}>
+                <Download />
                 Export GPX
               </Button>
-            </>
-          )}
-        </div>
-      </div>
-      {(plan.error || loop.error) && (
-        <p role="alert" className="mb-3 text-sm font-medium text-destructive">
-          Planning failed — check the connection and try again. Offline packs on
-          the phone still work.
-        </p>
-      )}
-      <div className="relative">
-        {!shown && !plan.isFetching && !loop.isFetching && (
-          <div className="pointer-events-none absolute inset-x-0 top-4 z-10 flex justify-center px-4">
-            <Empty className="border bg-background/95 py-4 shadow-lg backdrop-blur">
-              <EmptyHeader>
-                <EmptyTitle className="text-base">No route yet</EmptyTitle>
-                <EmptyDescription>Pick a preset and press Plan route — or draw a 60 km loop.</EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          </div>
+            </CardContent>
+          </Card>
         )}
-        <div
-          ref={mapEl}
-          role="application"
-          aria-label="Route preview map"
-          className="h-[60vh] w-full rounded-2xl border"
-        />
-      </div>
-      <p className="mt-2 text-xs text-muted-foreground">
-        Map data © OpenMapTiles © OpenStreetMap contributors
-      </p>
+      </aside>
+
+      <section aria-label="Route preview" className="flex flex-col gap-2">
+        <div className="relative">
+          {!shown && !busy && (
+            <div className="pointer-events-none absolute inset-x-0 top-4 z-10 flex justify-center px-4">
+              <Empty className="max-w-sm flex-none border bg-background/95 py-4 backdrop-blur">
+                <EmptyHeader>
+                  <EmptyTitle>No route yet</EmptyTitle>
+                  <EmptyDescription>Pick a road and press Plan route, or draw a 60 km loop.</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            </div>
+          )}
+          <div
+            ref={mapEl}
+            role="application"
+            aria-label="Route preview map"
+            className="h-[60vh] min-h-[420px] w-full overflow-hidden rounded-2xl border lg:h-[calc(100svh-9rem)]"
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">Map data © OpenMapTiles © OpenStreetMap contributors</p>
+      </section>
     </div>
   );
 }

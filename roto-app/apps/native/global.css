@@ -1,3 +1,74 @@
 @import "tailwindcss";
 @import "uniwind";
 @import "heroui-native/styles";
+
+/* Roto identity — maps HeroUI Native's theme tokens onto the "night highway"
+   palette (PRODUCT.md Brand Commitments, DESIGN.md, lib/roto-theme.ts is the
+   source of truth; keep both in sync). Dark mode gets the full
+   asphalt/tar/parchment/signal treatment so HeroUI components render in Roto
+   colors out of the box. Light mode stays on HeroUI's neutral white/gray
+   surfaces per DESIGN.md ("Light surfaces ... supported but secondary") and
+   only swaps the accent to signal yellow so signal stays the one primary in
+   both themes. */
+:root {
+  /* DESIGN.md "Inputs / Fields": 1px border on native, both themes. HeroUI
+     ships 0 by default (relies on background contrast instead). */
+  --field-border-width: 1px;
+
+  @variant light {
+    --accent: #ffb300;
+    --accent-foreground: #1a1200;
+    --focus: #ffb300;
+    --success: #16a34a;
+    --danger: #e5484d;
+  }
+
+  @variant dark {
+    --background: #0e1318; /* asphalt */
+    --foreground: #f2efe6; /* parchment */
+
+    --surface: #1b232c; /* tar */
+    --surface-foreground: #f2efe6;
+    --surface-secondary: #212b35;
+    --surface-secondary-foreground: #f2efe6;
+    --surface-tertiary: #26313d;
+    --surface-tertiary-foreground: #f2efe6;
+
+    --overlay: #1b232c;
+    --overlay-foreground: #f2efe6;
+    --backdrop: rgb(0 0 0 / 45%);
+
+    --muted: #8a94a0; /* fog */
+
+    --default: #1b232c;
+    --default-foreground: #f2efe6;
+
+    --accent: #ffb300; /* signal — the one accent, DESIGN.md "One Signal Rule" */
+    --accent-foreground: #1a1200; /* signal-ink */
+
+    --segment: #1b232c;
+    --segment-foreground: #f2efe6;
+
+    --field-background: #1b232c;
+    --field-foreground: #f2efe6;
+    --field-placeholder: #8a94a0;
+    --field-border: rgb(255 255 255 / 12%); /* DESIGN.md flat tonal layering */
+
+    --success: #16a34a; /* go — recording/live-ride affirmative only */
+    --success-foreground: #f2efe6;
+    /* ponytail: Roto has no distinct "warning" state in the design system —
+       recoverable states stay signal per DESIGN.md. Mapping warning to
+       signal keeps any HeroUI warning-variant component on-brand instead of
+       introducing an unplanned second accent hue. Revisit if a real warning
+       semantic (e.g. low battery) needs its own color. */
+    --warning: #ffb300;
+    --warning-foreground: #1a1200;
+    --danger: #e5484d;
+    --danger-foreground: #f2efe6;
+
+    --border: rgb(255 255 255 / 12%);
+    --separator: rgb(255 255 255 / 12%);
+    --focus: #ffb300;
+    --link: #f2efe6;
+  }
+}

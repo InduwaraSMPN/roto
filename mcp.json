@@ -1,17 +1,13 @@
 {
-  "$schema": "https://agentsstandard.com/schemas/mcp-catalog.json",
-  "_comment": "Project-shared MCP servers for roto (project scope only). Single source of truth — .mcp.json and .cline/mcp.json symlink here. No secrets: use ${ENV_VAR} refs if keys are ever added.",
   "mcpServers": {
     "chrome-devtools": {
       "command": "npx",
       "args": ["-y", "chrome-devtools-mcp@latest"],
-      "description": "Chrome DevTools — performance traces, network inspection, Lighthouse audits",
       "disabled": false
     },
     "context7": {
       "type": "streamableHttp",
       "url": "https://mcp.context7.com/mcp",
-      "description": "Up-to-date documentation and code examples for any library or framework",
       "disabled": false
     }
   }
