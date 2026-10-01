@@ -6,6 +6,7 @@ import { buttonVariants } from "@roto-app/ui/components/button";
 import { cn } from "@roto-app/ui/lib/utils";
 
 import { ModeToggle } from "./mode-toggle";
+import LanguageSwitcher from "./language-switcher";
 import UserMenu from "./user-menu";
 
 const links = [
@@ -53,6 +54,7 @@ export default function Header() {
           </nav>
         </div>
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <LanguageSwitcher />
           <ModeToggle />
           <UserMenu />
         </div>

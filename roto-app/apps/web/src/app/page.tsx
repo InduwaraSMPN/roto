@@ -33,7 +33,8 @@ export default function Home() {
     trpc.events.leaderboard.queryOptions({ year: now.getFullYear(), month: now.getMonth() + 1 }),
   );
 
-  const routes = curated.data ?? [];
+  // curated.list is cursor-paginated (§4.9) — home shows the first page only.
+  const routes = curated.data?.items ?? [];
   // The hero draws the hardest curated road (longest breaks ties): hill runs show the curves Roto is for.
   const grade = (d: string) => ({ hard: 3, medium: 2, easy: 1 })[d] ?? 0;
   const featured = routes.reduce<(typeof routes)[number] | null>(

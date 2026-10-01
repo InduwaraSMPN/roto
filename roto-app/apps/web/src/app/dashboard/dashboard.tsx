@@ -1,8 +1,10 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { CalendarDays, ShieldCheck } from "lucide-react";
 
 import { Badge } from "@roto-app/ui/components/badge";
+import { buttonVariants } from "@roto-app/ui/components/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@roto-app/ui/components/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@roto-app/ui/components/empty";
 import {
@@ -186,10 +188,22 @@ export default function Dashboard({
         </Card>
       </div>
 
-      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+      <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
         <ShieldCheck className="size-4 shrink-0" />
         Privacy zones stay on your phone. Ride starts and ends inside them never sync.
       </p>
+
+      <nav aria-label="Dashboard sections" className="flex flex-wrap gap-2">
+        <Link href="/dashboard/rides" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          My rides
+        </Link>
+        <Link href="/dashboard/privacy" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          Privacy zones
+        </Link>
+        <Link href="/dashboard/safety" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          SOS contacts
+        </Link>
+      </nav>
     </div>
   );
 }

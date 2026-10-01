@@ -1,0 +1,58 @@
+import type { Lang } from "@/lib/lang";
+
+// Colocated dictionary (D4 open: no next-intl — en/si/ta keyed dicts per route). The lesson
+// bodies and quiz questions come from @roto-app/core/learn so native and web share one pack;
+// only page chrome is translated here.
+export const dict: Record<Lang, Record<string, string>> = {
+  en: {
+    title: "Learn to ride LK roads",
+    sub: "Five short modules for new riders, each with a ten-question quiz.",
+    coming: "Lessons coming with the core content pack.",
+    open: "Open module",
+    back: "All modules",
+    quiz: "10-question quiz (with the content pack)",
+    startQuiz: "Start the quiz",
+    question: "Question {i} of {n}",
+    next: "Next question",
+    done: "Quiz complete",
+    score: "Score",
+    retake: "Retake",
+    backToLearn: "All modules",
+    correct: "Correct",
+    wrong: "Not quite",
+  },
+  si: {
+    title: "LK මාර්ගවල පැදීමට ඉගෙන ගන්න",
+    sub: "නව ධාවකයින් සඳහා කෙටි පාඩම් පහක්, එක් එක් එකට ප්‍රශ්න 10ක පරීක්ෂණයක් සමඟ.",
+    coming: "පාඩම් core පැකේජය සමඟ පැමිණේ.",
+    open: "පාඩම අරින්න",
+    back: "සියලු පාඩම්",
+    quiz: "ප්‍රශ්න 10ක පරීක්ෂණය",
+    startQuiz: "පරීක්ෂණය ආරම්භ කරන්න",
+    question: "ප්‍රශ්නය {n} න් {i}",
+    next: "ඊළඟ ප්‍රශ්නය",
+    done: "පරීක්ෂණය අවසන්",
+    score: "ලකුණ",
+    retake: "ආයෙන්",
+    backToLearn: "සියලු පාඩම්",
+    correct: "නිවැරදි",
+    wrong: "නොනිවැරදි",
+  },
+  ta: {
+    title: "LK சாலைகளில் ஓட்டக் கற்கவும்",
+    sub: "புதிய சவாரியாளர்களுக்கு ஐந்து குறுகிய பாடங்கள், ஒவ்வொன்றுக்கும் பத்து கேள்வி வினா.",
+    coming: "பாடங்கள் core தொகுப்புடன் வரும்.",
+    open: "பாடத்தைத் திறக்கவும்",
+    back: "அனைத்து பாடங்கள்",
+    quiz: "10 கேள்வி வினாடி வினா",
+    startQuiz: "வினாவைத் தொடங்கு",
+    question: "கேள்வி {i} / {n}",
+    next: "அடுத்த கேள்வி",
+    done: "வினா முடிந்தது",
+    score: "மதிப்பெண்",
+    retake: "மீண்டும்",
+    backToLearn: "அனைத்து பாடங்கள்",
+    correct: "சரி",
+    wrong: "தவறு",
+  },
+};

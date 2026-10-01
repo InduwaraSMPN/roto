@@ -1,0 +1,47 @@
+import type { Lang } from "@/lib/lang";
+
+// Colocated dictionary (D4 open: no next-intl — en/si/ta keyed dicts per route).
+export const dict: Record<Lang, Record<string, string>> = {
+  en: {
+    missing: "This route link is unavailable.",
+    missingSub: "The route may be private, deleted, or the sharing backend is still being built. Try the curated roads instead.",
+    curatedRoads: "Browse curated roads",
+    downloadGpx: "Download GPX",
+    pdfExport: "Route sheet PDF",
+    openInApp: "Open in app",
+    printExport: "Print view",
+    maneuvers: "Turn-by-turn",
+    noManeuvers: "No maneuver steps for this route — follow the yellow line.",
+    emergency: "Emergency numbers",
+    mapNote: "Map snapshots need preserveDrawingBuffer — use the print view for a clean export.",
+    via: "via",
+  },
+  si: {
+    missing: "මෙම මාර්ග සබැඳිය නොමැත.",
+    missingSub: "මාර්ගය පෞද්ගලික විය හැකියි, මකා දැමූවා විය හැකියි, නැතිනම් බෙදාගැනීමේ පසුබිම තවම හැදෙමින් පවතී.",
+    curatedRoads: "සකස් කළ මාර්ග බලන්න",
+    downloadGpx: "GPX බාගන්න",
+    pdfExport: "මාර්ග පත්‍ර PDF",
+    openInApp: "ඇප් එකෙන් අරින්න",
+    printExport: "මුද්‍රණ දසුන",
+    maneuvers: "හැරවුම් උපදෙස්",
+    noManeuvers: "මෙම මාර්ගයට හැරවුම් පියවර නැත — කහ ඉර අනුගමනය කරන්න.",
+    emergency: "හදිසි අංක",
+    mapNote: "සිතියම් පිටපතට preserveDrawingBuffer අවශ්‍යයි — පිරිසිදු පිටපතට මුද්‍රණ දසුන භාවිතා කරන්න.",
+    via: "හරහා",
+  },
+  ta: {
+    missing: "இந்த வழி இணைப்பு இல்லை.",
+    missingSub: "வழி தனிப்பட்டதாக இருக்கலாம், நீக்கப்பட்டிருக்கலாம், அல்லது பகிர்வு பின்புலம் இன்னும் கட்டப்படுகிறது.",
+    curatedRoads: "தேர்ந்த வழிகளைப் பார்க்கவும்",
+    downloadGpx: "GPX பதிவிறக்கம்",
+    pdfExport: "வழிப் பக்க PDF",
+    openInApp: "செயலியில் திறக்கவும்",
+    printExport: "அச்சுப் பார்வை",
+    maneuvers: "திருப்ப உத்தரவுகள்",
+    noManeuvers: "இந்த வழிக்கு திருப்ப படிகள் இல்லை — மஞ்சள் கோட்டைப் பின்பற்றவும்.",
+    emergency: "அவசர எண்கள்",
+    mapNote: "வரைபட நகலுக்கு preserveDrawingBuffer தேவை — சுத்தமான ஏற்றுமதிக்கு அச்சுப் பார்வையைப் பயன்படுத்தவும்.",
+    via: "வழியாக",
+  },
+};
