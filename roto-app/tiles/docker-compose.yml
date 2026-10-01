@@ -9,8 +9,11 @@ services:
   martin:
     image: maplibre/martin:latest
     ports: ["3005:3000"]
-    volumes: ["./data:/data:ro"]
-    command: --listen-addresses 0.0.0.0:3000 /data/sri-lanka.mbtiles
+    volumes: ["./data:/data:ro", "./martin.yaml:/martin.yaml:ro"]
+    # Sources live in martin.yaml (sri-lanka mbtiles + the road_curvature `curvature` layer);
+    # with a config file martin takes no source arguments.
+    command: -c /martin.yaml
+    depends_on: [postgres]
     restart: unless-stopped
   valhalla:
     image: ghcr.io/valhalla/valhalla:latest

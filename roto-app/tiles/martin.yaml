@@ -1,0 +1,51 @@
+# martin vector tile sources for the Roto dev stack.
+#
+# The compose service mounts this file read-only and starts martin with `-c /martin.yaml`;
+# with a config file martin takes no source arguments, so both sources live here.
+# martin 0.8's config only understands the keys `postgres:`, `mbtiles:` and `pmtiles:` at
+# top level (plus its own listen/worker options) - a bare `sri-lanka: /path.mbtiles` line is
+# silently ignored, so the file goes under `mbtiles.sources` where it gets its id from the key.
+#
+#   sri-lanka   the planetiler build (OpenMapTiles profile), z0-14
+#   curvature   public.road_curvature, the twisty-roads layer (plan 5.5) seeded by
+#               packages/db/src/seed/curvature-ways.ts and styled in style.template.json
+#               (>=300 fun, >=1000 best)
+#
+# Only road_curvature is published out of the app database. martin's auto-detection would
+# also publish every other spatial table in `public` - pois, hazards, privacy_zones, events -
+# which is not something a tile server should hand out; `tables` below is the allowlist.
+# `auto_publish: false` keeps a future migration from silently adding sources.
+#
+# The connection string uses the compose service name, so it works from inside the compose
+# network without a host port. Credentials are the local PostGIS container's defaults.
+listen_addresses: '0.0.0.0:3000'
+
+mbtiles:
+  sources:
+    sri-lanka: /data/sri-lanka.mbtiles
+
+postgres:
+  connection_string: postgres://postgres:postgres@postgres:5432/postgres
+  auto_publish: false
+  tables:
+    curvature:
+      schema: public
+      table: road_curvature
+      geometry_column: geom
+      geometry_type: LINESTRING
+      srid: 4326
+      extent: 8192
+      buffer: 64
+      clip_geom: true
+      minzoom: 8
+      maxzoom: 14
+      # martin only emits the columns listed here (name -> postgres type). Without this the
+      # tiles come back with geometry and no attributes at all, and the style's score
+      # thresholds and labels have nothing to read.
+      properties:
+        osm_way_id: text
+        name: text
+        score: float4
+      # Cheap change detector so a re-run of the seed republishes the layer on the next
+      # refresh; without it the materialised view only changes when POST /refresh is called.
+      query: select count(*)::bigint as ways, coalesce(max(score), 0) as top from public.road_curvature

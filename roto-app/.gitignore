@@ -50,12 +50,16 @@ lerna-debug.log*
 # Testing
 coverage
 .nyc_output
+**/.vitest/
 
 # Misc
 *.tgz
 .cache
 tmp
 temp
+
+# Dev server scratch logs (Start-Process redirects during manual verification)
+apps/*/[a-z]*.log
 
 # LK tiles build artifacts (regenerable, see tiles/README.md)
 tiles/data/
@@ -64,3 +68,5 @@ tiles/*.jar
 tiles/valhalla/*.pbf
 tiles/valhalla/valhalla_tiles/
 tiles/valhalla/*.tar
+tiles/valhalla/*.sqlite
+tiles/valhalla/elevation_tiles/

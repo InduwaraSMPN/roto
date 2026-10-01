@@ -25,7 +25,7 @@
     "keep_osm_node_ids": false,
     "include_platforms": false,
     "include_driveways": true,
-    "include_construction": false,
+    "include_construction": true,
     "include_bicycle": true,
     "include_pedestrian": true,
     "include_driving": true,
@@ -49,7 +49,7 @@
     }
   },
   "additional_data": {
-    "elevation": "/data/valhalla/elevation/"
+    "elevation": "/custom_files/elevation_tiles"
   },
   "loki": {
     "actions": [
@@ -110,6 +110,7 @@
       "max_reserved_locations": 25,
       "max_iterations": 2800,
       "min_iterations": 100,
+      "dijkstra_distance": 0,
       "hierarchy_limits": {
         "max_up_transitions": {
           "1": 400,
@@ -273,7 +274,7 @@
       "max_matrix_location_pairs": 0
     },
     "status": {
-      "allow_verbose": false
+      "allow_verbose": true
     },
     "transit": {
       "max_distance": 500000.0,
@@ -328,6 +329,7 @@
     "max_timedep_distance_matrix": 0,
     "max_alternates": 2,
     "max_exclude_polygons_length": 10000,
+    "max_exclude_polygons_vertices": 100,
     "min_linear_cost_factor": 1,
     "max_linear_cost_edges": 50000,
     "max_distance_disable_hierarchy_culling": 0,
