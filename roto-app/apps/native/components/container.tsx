@@ -9,7 +9,9 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 type Props = AnimatedProps<ViewProps> & {
   className?: string;
   isScrollable?: boolean;
-  scrollViewProps?: Omit<ScrollViewProps, "contentContainerStyle">;
+  // contentContainerStyle is allowed but merged into the defaults (flexGrow: 1) so a screen
+  // can add gap/centering without losing the fill behaviour.
+  scrollViewProps?: ScrollViewProps;
 };
 
 export function Container({
@@ -31,10 +33,10 @@ export function Container({
     >
       {isScrollable ? (
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
           contentInsetAdjustmentBehavior="automatic"
           {...scrollViewProps}
+          contentContainerStyle={[{ flexGrow: 1 }, scrollViewProps?.contentContainerStyle]}
         >
           {children}
         </ScrollView>

@@ -1,0 +1,9 @@
+{
+  "name": "roto-safety",
+  "version": "1.0.0",
+  "description": "Background crash detection and full-screen SOS alert for Roto (Android only, local Expo module).",
+  "main": "index.ts",
+  "types": "index.ts",
+  "license": "UNLICENSED",
+  "private": true
+}

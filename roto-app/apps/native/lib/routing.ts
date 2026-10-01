@@ -1,7 +1,27 @@
-// ponytail: client GPX only, engine stays server-side for FOSS tile independence
-export type RouteResult = { coords: [number, number][]; km: number; min: number; engine: string; steps?: { instruction: string; lon: number; lat: number }[] };
-
-export function toGpx(r: RouteResult, name = "roto-ride"): string {
-  const pts = r.coords.map(([lon, lat]) => `<trkpt lat="${lat}" lon="${lon}"/>`).join("");
-  return `<?xml version="1.0"?><gpx version="1.1" creator="roto"><trk><name>${name}</name><trkseg>${pts}</trkseg></trk></gpx>`;
-}
+// Thin re-export of @roto-app/core/types (A1). The bespoke native `RouteResult` (just
+// `{coords, km, min, engine, steps?}`) is gone — the app now uses the same `RouteResult` shape
+// the server's route router returns (`{coords, km, min, engine, maneuvers, elevation?,
+// capabilities}`), so `trpc.route.plan`/`roundTrip` results need no reshaping before going into
+// state. See packages/api/src/lib/routing.ts for the matching server-side re-export shim.
+export {
+  ManeuverType,
+  RIDE_MODE_CURVY,
+} from "@roto-app/core/types";
+export type {
+  AvoidOptions,
+  ElevationProfile,
+  Lang,
+  LatLon,
+  LonLat,
+  Maneuver,
+  ManeuverTypeValue,
+  PlanOptions,
+  RideMode,
+  RideSample,
+  RouteCapabilities,
+  RouteEngine,
+  RouteResult,
+  RoundTripOptions,
+  Waypoint,
+  WaypointKind,
+} from "@roto-app/core/types";

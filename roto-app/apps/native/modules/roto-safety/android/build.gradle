@@ -1,0 +1,21 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'lk.roto.safety'
+version = '1.0.0'
+
+android {
+  namespace "lk.roto.safety"
+  defaultConfig {
+    versionCode 1
+    versionName "1.0.0"
+  }
+}
+
+dependencies {
+  // Matches expo-location's play-services-location pin (node_modules/expo-location/android/build.gradle)
+  // so both resolve to the same version instead of two conflicting play-services releases.
+  api 'com.google.android.gms:play-services-location:21.0.1'
+}

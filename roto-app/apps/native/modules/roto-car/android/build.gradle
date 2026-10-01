@@ -1,0 +1,25 @@
+// Mirrors node_modules/expo-location/android/build.gradle: the expo-module-gradle-plugin reads
+// compileSdk/minSdk/targetSdk and Kotlin config from the root project, so this file only needs to
+// declare the module's own identity and its one extra native dependency.
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'lk.roto.app.modules'
+version = '1.0.0'
+
+android {
+  namespace "expo.modules.rotocar"
+  defaultConfig {
+    versionCode 1
+    versionName "1.0.0"
+  }
+}
+
+dependencies {
+  // Android for Cars App Library. 1.7.0 is the current stable release (androidx.car.app
+  // Jetpack release notes, checked 2026-09-27). `app` (not `app-automotive`) targets Android
+  // Auto projection only, which matches D5 (no Android Automotive OS / built-in-car target).
+  implementation "androidx.car.app:app:1.7.0"
+}

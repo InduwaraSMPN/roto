@@ -1,0 +1,8 @@
+{
+  "name": "roto-car",
+  "version": "1.0.0",
+  "description": "Local Expo module: Android Auto (androidx.car.app) integration for Roto. Android only, no npm publish.",
+  "main": "index.ts",
+  "license": "UNLICENSED",
+  "private": true
+}

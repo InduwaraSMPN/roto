@@ -1,13 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Link } from "expo-router";
 import { Drawer } from "expo-router/drawer";
 import { useThemeColor } from "heroui-native";
 import React, { useCallback } from "react";
-import { Pressable, Text } from "react-native";
+import { Text } from "react-native";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useLang } from "@/lib/i18n";
 
 function DrawerLayout() {
+  const { t } = useLang();
   const themeColorForeground = useThemeColor("foreground");
   const themeColorBackground = useThemeColor("background");
 
@@ -29,9 +30,9 @@ function DrawerLayout() {
       <Drawer.Screen
         name="index"
         options={{
-          headerTitle: "Home",
+          headerTitle: t.home,
           drawerLabel: ({ color, focused }) => (
-            <Text style={{ color: focused ? color : themeColorForeground }}>Home</Text>
+            <Text style={{ color: focused ? color : themeColorForeground }}>{t.home}</Text>
           ),
           drawerIcon: ({ size, color, focused }) => (
             <Ionicons
@@ -45,9 +46,9 @@ function DrawerLayout() {
       <Drawer.Screen
         name="(tabs)"
         options={{
-          headerTitle: "Ride",
+          headerTitle: t.sectionRide,
           drawerLabel: ({ color, focused }) => (
-            <Text style={{ color: focused ? color : themeColorForeground }}>Ride</Text>
+            <Text style={{ color: focused ? color : themeColorForeground }}>{t.sectionRide}</Text>
           ),
           drawerIcon: ({ size, color, focused }) => (
             <Ionicons
@@ -56,12 +57,21 @@ function DrawerLayout() {
               color={focused ? color : themeColorForeground}
             />
           ),
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable className="mr-4">
-                <Ionicons name="add-outline" size={24} color={themeColorForeground} />
-              </Pressable>
-            </Link>
+        }}
+      />
+      <Drawer.Screen
+        name="safety"
+        options={{
+          headerTitle: t.sosContacts,
+          drawerLabel: ({ color, focused }) => (
+            <Text style={{ color: focused ? color : themeColorForeground }}>{t.sosContacts}</Text>
+          ),
+          drawerIcon: ({ size, color, focused }) => (
+            <Ionicons
+              name="people-outline"
+              size={size}
+              color={focused ? color : themeColorForeground}
+            />
           ),
         }}
       />

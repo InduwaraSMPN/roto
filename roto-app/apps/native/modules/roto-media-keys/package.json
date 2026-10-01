@@ -1,0 +1,14 @@
+{
+  "name": "roto-media-keys",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local Expo module (Android only, D15): bridges handlebar/headset Bluetooth remote media buttons to Roto via an Android MediaSession, with long-press detection and debounce. See README.md for the key mapping, limitations, and test steps.",
+  "main": "index.ts",
+  "types": "index.ts",
+  "license": "UNLICENSED",
+  "peerDependencies": {
+    "expo": "*",
+    "expo-modules-core": "*",
+    "react-native": "*"
+  }
+}

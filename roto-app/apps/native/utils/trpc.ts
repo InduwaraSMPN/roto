@@ -6,14 +6,12 @@ import { Platform } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
 
-import { ENV as env } from "../src/env";
-
 export const queryClient = new QueryClient();
 
 const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: `${env.EXPO_PUBLIC_SERVER_URL}/trpc`,
+      url: `${process.env.EXPO_PUBLIC_SERVER_URL}/trpc`,
       fetch: function (url, options) {
         return fetch(url, {
           ...options,

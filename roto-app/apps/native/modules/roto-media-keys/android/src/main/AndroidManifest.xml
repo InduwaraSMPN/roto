@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!--
+    Intentionally empty: no permission, receiver, or service is needed.
+    See plugin/with-roto-media-keys.js for why, and README.md "Limitations".
+  -->
+</manifest>

@@ -9,7 +9,10 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.roto-app"
+      "bundleIdentifier": "lk.roto.app",
+      "infoPlist": {
+        "UIBackgroundModes": ["location", "audio"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +22,11 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.rotoapp"
+      "package": "lk.roto.app",
+      "permissions": [
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.SCHEDULE_EXACT_ALARM"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -41,7 +48,28 @@
         }
       ],
       "@maplibre/maplibre-react-native",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Roto records your ride and watches for crashes even when the app is in the background.",
+          "locationAlwaysPermission": "Roto records your ride and watches for crashes even when the app is in the background.",
+          "locationWhenInUsePermission": "Roto records your ride, guides navigation and watches for crashes.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      "./modules/roto-safety/app.plugin.js",
+      "./modules/roto-car/app.plugin.js",
+      "./modules/roto-media-keys/app.plugin.js",
+      [
+        "expo-notifications",
+        {
+          "color": "#FFB300",
+          "defaultChannel": "sos"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

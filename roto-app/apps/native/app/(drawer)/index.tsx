@@ -30,7 +30,8 @@ export default function Home() {
   const successColor = useThemeColor("success");
   const dangerColor = useThemeColor("danger");
 
-  const topRoutes = (curated.data ?? []).slice(0, 3);
+  // curated.list is cursor-paginated (§4.9) — the drawer shows the first page's top 3.
+  const topRoutes = (curated.data?.items ?? []).slice(0, 3);
   const topRiders = (leaderboard.data ?? []).slice(0, 3);
 
   return (

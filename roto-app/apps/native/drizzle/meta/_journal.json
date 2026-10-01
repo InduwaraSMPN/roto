@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1790535446343,
+      "tag": "0000_huge_mantis",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1790540234679,
+      "tag": "0001_lean_hemingway",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790578023638,
+      "tag": "0002_solid_shape",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1790598962427,
+      "tag": "0003_overconfident_daimon_hellstrom",
+      "breakpoints": true
+    }
+  ]
+}

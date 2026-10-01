@@ -1,0 +1,22 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'org.rotoapp.modules'
+version = '1.0.0'
+
+android {
+  namespace "expo.modules.rotomediakeys"
+  defaultConfig {
+    versionCode 1
+    versionName "1.0.0"
+  }
+}
+
+dependencies {
+  // MediaSessionCompat / PlaybackStateCompat / MediaButtonReceiver keep the
+  // legacy android.support.v4.media.session package name on purpose (source
+  // compatibility), even though the artifact itself is AndroidX.
+  api 'androidx.media:media:1.7.0'
+}

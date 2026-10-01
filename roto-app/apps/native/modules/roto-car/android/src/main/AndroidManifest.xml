@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!--
+    The service declaration, minCarApiLevel, automotive_app_desc.xml meta-data and permissions
+    all live on the *app's* merged manifest, added by plugin/with-roto-car.js, because they must
+    reference the app's own RotoCarAppService entry and can't be expressed as a library default
+    (a config plugin runs at prebuild time against apps/native/android, which this module's own
+    manifest never touches). This file exists only because AGP requires one per library module.
+  -->
+</manifest>
