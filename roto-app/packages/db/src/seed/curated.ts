@@ -3,14 +3,7 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { planRoute } from "@roto-app/api/lib/routing";
 import { curatedRoutes } from "../schema/curated";
-
-const ROUTES: { nameEn: string; region: string; difficulty: string; from: { lat: number; lon: number }; to: { lat: number; lon: number } }[] = [
-  { nameEn: "Kandy → Nuwara Eliya hill run", region: "hill-country", difficulty: "hard", from: { lat: 7.2906, lon: 80.6337 }, to: { lat: 6.9497, lon: 80.7891 } },
-  { nameEn: "Colombo → Galle coastal", region: "south-coast", difficulty: "easy", from: { lat: 6.9271, lon: 79.8612 }, to: { lat: 6.0535, lon: 80.221 } },
-  { nameEn: "Nuwara Eliya → Ella highlands", region: "hill-country", difficulty: "hard", from: { lat: 6.9497, lon: 80.7891 }, to: { lat: 6.8667, lon: 81.0466 } },
-  { nameEn: "Dambulla → Anuradhapura heritage", region: "cultural-triangle", difficulty: "medium", from: { lat: 7.856, lon: 80.6491 }, to: { lat: 8.3114, lon: 80.4037 } },
-  { nameEn: "Ella → Wellawaya valley", region: "hill-country", difficulty: "medium", from: { lat: 6.8667, lon: 81.0466 }, to: { lat: 6.7367, lon: 81.1046 } },
-];
+import { LK_CLASSICS } from "./curated.lk";
 
 const db = drizzle(process.env.DATABASE_URL || "");
 const existing = await db.select({ id: curatedRoutes.id }).from(curatedRoutes).limit(1);
@@ -18,10 +11,14 @@ if (existing.length) {
   console.log("curated already seeded, skipping");
   process.exit(0);
 }
-for (const r of ROUTES) {
-  const planned = await planRoute([r.from, r.to], 0.8);
+for (const r of LK_CLASSICS) {
+  const planned = await planRoute([r.from, ...(r.via ?? []), r.to], r.curvy);
+  // tags/bestSeason ride along in curated.lk.ts until the §4.9 migration adds those columns;
+  // only currently-typed columns are inserted so this keeps compiling either way.
   await db.insert(curatedRoutes).values({
     nameEn: r.nameEn,
+    nameSi: r.nameSi,
+    nameTa: r.nameTa,
     region: r.region,
     difficulty: r.difficulty,
     distanceKm: Math.round(planned.km * 10) / 10,

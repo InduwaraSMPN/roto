@@ -1,0 +1,166 @@
+// LK classics for the curated seed (§5.5). Geometry here is waypoint pairs only — full coords
+// are generated at seed runtime by our own Valhalla via planRoute (seed/curated.ts), marked
+// verified: 'generated' until ridden (existing ponytail rule). si/ta names are first-pass
+// translations and need native-speaker review before store release (repo invariant).
+export type LkClassic = {
+  nameEn: string;
+  nameSi: string;
+  nameTa: string;
+  region: string;
+  difficulty: "easy" | "medium" | "hard";
+  tags: ("coast" | "hills" | "tea" | "ancient" | "wildlife")[];
+  bestSeason: string;
+  from: { lat: number; lon: number };
+  via?: { lat: number; lon: number }[];
+  to: { lat: number; lon: number };
+  curvy: number;
+};
+
+export const LK_CLASSICS: LkClassic[] = [
+  {
+    nameEn: "Colombo – Galle coast",
+    nameSi: "කොළඹ – ගාල්ල වෙරළ",
+    nameTa: "கொழும்பு – காலி கடற்கரை",
+    region: "south-coast",
+    difficulty: "easy",
+    tags: ["coast"],
+    bestSeason: "Nov–Apr (SW coast driest; SW monsoon May–Sep)",
+    from: { lat: 6.9271, lon: 79.8612 },
+    to: { lat: 6.0535, lon: 80.221 },
+    curvy: 0.5,
+  },
+  {
+    nameEn: "Kandy – Nuwara Eliya hill run",
+    nameSi: "මහනුවර – නුවරඑළිය කඳු",
+    nameTa: "கண்டி – நுவரெலியா மலை",
+    region: "hill-country",
+    difficulty: "hard",
+    tags: ["hills", "tea"],
+    bestSeason: "Jan–Apr (clearest skies up-country)",
+    from: { lat: 7.2906, lon: 80.6337 },
+    to: { lat: 6.9497, lon: 80.7891 },
+    curvy: 0.8,
+  },
+  {
+    nameEn: "Nuwara Eliya – Ella highlands",
+    nameSi: "නුවරඑළිය – ඇල්ල",
+    nameTa: "நுவரெலியா – எல்ல",
+    region: "hill-country",
+    difficulty: "hard",
+    tags: ["hills", "tea"],
+    bestSeason: "Jan–Apr",
+    from: { lat: 6.9497, lon: 80.7891 },
+    to: { lat: 6.8667, lon: 81.0466 },
+    curvy: 0.8,
+  },
+  {
+    nameEn: "Ella – Wellawaya valley",
+    nameSi: "ඇල්ල – වැල්ලවාය",
+    nameTa: "எல்ல – வெல்லவாய",
+    region: "hill-country",
+    difficulty: "medium",
+    tags: ["hills"],
+    bestSeason: "Jan–Apr; Jun–Sep dry on the eastern side",
+    from: { lat: 6.8667, lon: 81.0466 },
+    to: { lat: 6.7367, lon: 81.1046 },
+    curvy: 0.7,
+  },
+  {
+    nameEn: "Ancient Cities loop",
+    nameSi: "පුරාණ නගර වටය",
+    nameTa: "பண்டைய நகரங்கள் சுற்று",
+    region: "cultural-triangle",
+    difficulty: "medium",
+    tags: ["ancient"],
+    bestSeason: "May–Sep (dry zone driest; NE monsoon Dec–Feb brings rain)",
+    from: { lat: 8.3114, lon: 80.4037 },
+    via: [{ lat: 8.35, lon: 80.65 }, { lat: 7.9403, lon: 81.0188 }, { lat: 7.957, lon: 80.7603 }],
+    to: { lat: 7.856, lon: 80.6491 },
+    curvy: 0.4,
+  },
+  {
+    nameEn: "Kandy – Mahiyangana 18 bends",
+    nameSi: "මහනුවර – මහියංගණ නැමීම් 18",
+    nameTa: "கண்டி – மகியங்கனை 18 வளைவுகள்",
+    region: "hill-country",
+    difficulty: "hard",
+    tags: ["hills"],
+    bestSeason: "Jan–Apr",
+    from: { lat: 7.2906, lon: 80.6337 },
+    to: { lat: 7.3226, lon: 80.9852 },
+    curvy: 0.9,
+  },
+  {
+    nameEn: "Haputale – Belihuloya",
+    nameSi: "හපුතලේ – බෙලිහුල්ඔය",
+    nameTa: "அப்புத்தளை – பெலிஹுல்ஓயா",
+    region: "hill-country",
+    difficulty: "medium",
+    tags: ["hills", "tea"],
+    bestSeason: "Jan–Apr; Dec mornings can be misty",
+    from: { lat: 6.7681, lon: 80.9515 },
+    to: { lat: 6.6946, lon: 80.7706 },
+    curvy: 0.8,
+  },
+  {
+    nameEn: "Knuckles (Kandy – Corbett's Gap)",
+    nameSi: "නකල්ස් (මහනුවර – කෝබට්ගේ කඩ)",
+    nameTa: "நக்கிள்ஸ் (கண்டி – கோர்பெட் இடைவெளி)",
+    region: "knuckles",
+    difficulty: "hard",
+    tags: ["hills", "wildlife"],
+    bestSeason: "Jan–Apr (leeches year-round after rain — carry salt)",
+    from: { lat: 7.2906, lon: 80.6337 },
+    to: { lat: 7.3561, lon: 80.7818 },
+    curvy: 0.9,
+  },
+  {
+    nameEn: "Deniyaya – Sinharaja",
+    nameSi: "දෙනියාය – සිංහරාජ",
+    nameTa: "தெனியாய – சிங்கராஜா",
+    region: "south-inland",
+    difficulty: "medium",
+    tags: ["wildlife"],
+    bestSeason: "Jan–Apr; Aug–Sep drier inter-monsoon",
+    from: { lat: 6.3433, lon: 80.5543 },
+    to: { lat: 6.3644, lon: 80.4667 },
+    curvy: 0.7,
+  },
+  {
+    nameEn: "Arugam Bay coast",
+    nameSi: "ආරුගම්බේ වෙරළ",
+    nameTa: "அறுகம்பே கடற்கரை",
+    region: "east-coast",
+    difficulty: "easy",
+    tags: ["coast", "wildlife"],
+    bestSeason: "May–Sep (east coast season; surf Apr–Oct)",
+    from: { lat: 6.8817, lon: 81.8322 },
+    to: { lat: 6.7566, lon: 81.8184 },
+    curvy: 0.4,
+  },
+  {
+    nameEn: "Jaffna peninsula loop",
+    nameSi: "යාපනය අර්ධද්වීප වටය",
+    nameTa: "யாழ்ப்பாணக் குடாநாட்டுச் சுற்று",
+    region: "north",
+    difficulty: "easy",
+    tags: ["coast"],
+    bestSeason: "Jan–Sep (avoid NE monsoon Oct–Dec)",
+    from: { lat: 9.6615, lon: 80.0255 },
+    via: [{ lat: 9.81, lon: 80.22 }],
+    to: { lat: 9.821, lon: 80.233 },
+    curvy: 0.4,
+  },
+  {
+    nameEn: "Horton Plains approach",
+    nameSi: "හෝර්ටන් තැන්න ගමන",
+    nameTa: "ஹோர்ட்டன் சமவெளிப் பயணம்",
+    region: "hill-country",
+    difficulty: "medium",
+    tags: ["hills", "wildlife"],
+    bestSeason: "Jan–Mar (best World's End views before 9am)",
+    from: { lat: 6.8198, lon: 80.8425 },
+    to: { lat: 6.8028, lon: 80.8091 },
+    curvy: 0.7,
+  },
+];

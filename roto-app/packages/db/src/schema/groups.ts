@@ -1,4 +1,4 @@
-import { index, pgTable, real, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, primaryKey, real, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
 // ponytail: positions in-DB (not memory) so it works multi-instance on Vercel; 120s staleness filter at read
@@ -9,6 +9,10 @@ export const rideGroups = pgTable("ride_groups", {
   ownerId: text("owner_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  routeId: text("route_id"), // shared route for the group, no FK yet (saved_routes lands later)
+  regroupLat: real("regroup_lat"),
+  regroupLon: real("regroup_lon"),
+  endsAt: timestamp("ends_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -23,7 +27,7 @@ export const groupMembers = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     joinedAt: timestamp("joined_at").defaultNow().notNull(),
   },
-  (t) => [index("members_group_idx").on(t.groupId)],
+  (t) => [primaryKey({ columns: [t.groupId, t.userId] })],
 );
 
 export const livePositions = pgTable(
@@ -38,7 +42,9 @@ export const livePositions = pgTable(
     lat: real("lat").notNull(),
     lon: real("lon").notNull(),
     speed: real("speed"),
+    heading: real("heading"),
+    accuracyM: real("accuracy_m"),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
-  (t) => [index("live_group_idx").on(t.groupId)],
+  (t) => [primaryKey({ columns: [t.groupId, t.userId] })],
 );

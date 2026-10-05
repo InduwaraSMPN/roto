@@ -43,6 +43,104 @@
       "when": 1789329510866,
       "tag": "0005_keen_deathbird",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790532111698,
+      "tag": "0006_good_iron_lad",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790534844912,
+      "tag": "0007_postgis",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790535273271,
+      "tag": "0008_geom_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790535416549,
+      "tag": "0009_pois_expand",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790535483276,
+      "tag": "0010_routes_folders",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790535534525,
+      "tag": "0011_safety",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790535600131,
+      "tag": "0012_hazards_closures",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1790540414083,
+      "tag": "0013_ride_photos",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790540598942,
+      "tag": "0014_auth_plugins",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1790540716408,
+      "tag": "0015_community",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1790540817392,
+      "tag": "0016_challenges",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1790540944267,
+      "tag": "0017_lk_data",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1790541026457,
+      "tag": "0018_moderation_ratelimit",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1790541121499,
+      "tag": "0019_garage",
+      "breakpoints": true
     }
   ]
 }
