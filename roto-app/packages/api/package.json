@@ -10,10 +10,12 @@
     }
   },
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@roto-app/auth": "*",
+    "@roto-app/core": "*",
     "@roto-app/db": "*",
     "@trpc/client": "^11.18.0",
     "@trpc/server": "^11.18.0",
@@ -21,6 +23,7 @@
   },
   "devDependencies": {
     "@roto-app/config": "*",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.2"
   }
 }

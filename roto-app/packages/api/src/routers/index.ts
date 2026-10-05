@@ -5,6 +5,17 @@ import { groupsRouter } from "./groups";
 import { curatedRouter } from "./curated";
 import { eventsRouter } from "./events";
 import { privacyRouter } from "./privacy";
+import { safetyRouter } from "./safety";
+import { poisRouter } from "./pois";
+import { hazardsRouter } from "./hazards";
+import { holidaysRouter } from "./holidays";
+import { fuelRouter } from "./fuel";
+import { routesRouter } from "./routes";
+import { communityRouter } from "./community";
+import { challengesRouter } from "./challenges";
+import { moderationRouter } from "./moderation";
+import { garageRouter } from "./garage";
+import { syncRouter } from "./sync";
 
 export const appRouter = router({
   route: routeRouter,
@@ -13,6 +24,17 @@ export const appRouter = router({
   curated: curatedRouter,
   events: eventsRouter,
   privacy: privacyRouter,
+  safety: safetyRouter,
+  pois: poisRouter,
+  hazards: hazardsRouter,
+  holidays: holidaysRouter,
+  fuel: fuelRouter,
+  routes: routesRouter,
+  community: communityRouter,
+  challenges: challengesRouter,
+  moderation: moderationRouter,
+  garage: garageRouter,
+  sync: syncRouter,
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
