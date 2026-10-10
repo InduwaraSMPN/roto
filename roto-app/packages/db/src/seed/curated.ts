@@ -6,6 +6,10 @@ import { curatedRoutes } from "../schema/curated";
 import { LK_CLASSICS } from "./curated.lk";
 
 const db = drizzle(process.env.DATABASE_URL || "");
+
+// ponytail: bails out if any row exists, so re-running never refreshes stale rows — delete
+// curated_routes first to re-seed. This bit us: an older seed left 5 routes named with "→" while
+// curated.lk.ts moved to "–", so a later run silently kept the old English-only names.
 const existing = await db.select({ id: curatedRoutes.id }).from(curatedRoutes).limit(1);
 if (existing.length) {
   console.log("curated already seeded, skipping");
