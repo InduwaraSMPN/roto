@@ -64,6 +64,10 @@ temp
 # Dev server scratch logs (Start-Process redirects during manual verification)
 apps/*/[a-z]*.log
 
+# LK geo source archives (1.4 GB: water polygons, Natural Earth, lake centrelines).
+# Regenerable/downloadable inputs to the tile pipeline — never commit them.
+data/sources/
+
 # LK tiles build artifacts (regenerable, see tiles/README.md)
 tiles/data/
 tiles/fonts/
