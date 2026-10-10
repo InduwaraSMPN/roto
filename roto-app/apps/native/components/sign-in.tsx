@@ -11,15 +11,11 @@ import {
 } from "heroui-native";
 import { useRef } from "react";
 import { Text, TextInput, View } from "react-native";
-import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
+import { isAuthMessageId, signInSchema } from "@/lib/auth-schemas";
+import { useLang } from "@/lib/i18n";
 import { queryClient } from "@/utils/trpc";
-
-const signInSchema = z.object({
-  email: z.string().trim().min(1, "Email is required").email("Enter a valid email address"),
-  password: z.string().min(1, "Password is required").min(8, "Use at least 8 characters"),
-});
 
 function getErrorMessage(error: unknown): string | null {
   if (!error) return null;
@@ -49,6 +45,7 @@ function getErrorMessage(error: unknown): string | null {
 }
 
 function SignIn() {
+  const { t } = useLang();
   const passwordInputRef = useRef<TextInput>(null);
   const { toast } = useToast();
 
@@ -70,14 +67,14 @@ function SignIn() {
           onError(error) {
             toast.show({
               variant: "danger",
-              label: error.error?.message || "Failed to sign in",
+              label: error.error?.message || t.signInFailed,
             });
           },
           onSuccess() {
             formApi.reset();
             toast.show({
               variant: "success",
-              label: "Signed in successfully",
+              label: t.signInSuccess,
             });
             queryClient.refetchQueries();
           },
@@ -88,7 +85,7 @@ function SignIn() {
 
   return (
     <Surface variant="secondary" className="p-4 rounded-lg">
-      <Text className="text-foreground font-medium mb-4">Sign In</Text>
+      <Text className="text-foreground font-medium mb-4">{t.signIn}</Text>
 
       <form.Subscribe
         selector={(state) => ({
@@ -97,7 +94,10 @@ function SignIn() {
         })}
       >
         {({ isSubmitting, validationError }) => {
-          const formError = validationError;
+          // The schema emits message ids (see lib/auth-schemas.ts) because it cannot close over `t`;
+          // anything the map does not recognise is a server message and is shown as-is.
+          const formError =
+            validationError && isAuthMessageId(validationError) ? t[validationError] : validationError;
 
           return (
             <>
@@ -109,12 +109,12 @@ function SignIn() {
                 <form.Field name="email">
                   {(field) => (
                     <TextField>
-                      <Label>Email</Label>
+                      <Label>{t.email}</Label>
                       <Input
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChangeText={field.handleChange}
-                        placeholder="email@example.com"
+                        placeholder={t.emailPlaceholder}
                         keyboardType="email-address"
                         autoCapitalize="none"
                         autoComplete="email"
@@ -132,7 +132,7 @@ function SignIn() {
                 <form.Field name="password">
                   {(field) => (
                     <TextField>
-                      <Label>Password</Label>
+                      <Label>{t.password}</Label>
                       <Input
                         ref={passwordInputRef}
                         value={field.state.value}
@@ -153,7 +153,7 @@ function SignIn() {
                   {isSubmitting ? (
                     <Spinner size="sm" color="default" />
                   ) : (
-                    <Button.Label>Sign In</Button.Label>
+                    <Button.Label>{t.signIn}</Button.Label>
                   )}
                 </Button>
               </View>

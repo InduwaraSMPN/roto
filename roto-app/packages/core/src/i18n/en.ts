@@ -84,6 +84,53 @@ export const en = {
   offRoute: "Off route",
   rerouting: "Rerouting…",
   returnToRoute: "Return to route",
+
+  // Home screen — these were hardcoded English literals, so the language switcher did nothing here.
+  homeTagline: "Free offline-first rides for Sri Lanka — no subscription, no tracking.",
+  planNoAccount: "Plan a ride — no account needed",
+  planRide: "Plan a ride",
+  welcomeBack: "Welcome back",
+  signOut: "Sign Out",
+  provenRoutes: "Proven LK routes",
+  loadingRoutes: "Loading routes…",
+  routesUnavailable: "Routes are unavailable. Open the Ride tab and draw a 60 km loop.",
+  ridingThisMonth: "Riding this month",
+  targetKm: "Target 500 km",
+  checkingPack: "Checking the pack…",
+  noRidesYet: "No rides logged yet — record a ride and take the top spot.",
+  serviceStatus: "Service status",
+  rotoApi: "Roto API",
+  checkingConnection: "Checking connection…",
+  apiConnected: "Connected — routes and community are live",
+  apiOffline: "Offline — offline packs and recording still work",
+
+  // Curated-route metadata labels (the slugs live in the DB, so they are translated here)
+  difficultyEasy: "Easy",
+  difficultyMedium: "Medium",
+  difficultyHard: "Hard",
+  regionSouthCoast: "South coast",
+  regionSouthInland: "South inland",
+  regionHillCountry: "Hill country",
+  regionCulturalTriangle: "Cultural triangle",
+  regionEastCoast: "East coast",
+  regionNorth: "North",
+  regionKnuckles: "Knuckles",
+
+  // Home tab (the "Start here" screen inside the tab group) + tab-bar titles
+  startHere: "Start here",
+  startHereSub:
+    "The Ride tab plans and records. The Rides tab holds challenges, group rides, and privacy zones.",
+  readyToRide: "Ready to ride?",
+  readyToRideSub: "Plan a curvy loop, download the offline pack, then hit START RIDE.",
+  openRideTab: "Open the Ride tab",
+  ridesTab: "Rides",
+
+  // Auth forms
+  signIn: "Sign In",
+  email: "Email",
+  password: "Password",
+  createAccount: "Create Account",
+  fullName: "Name",
 };
 
 export type Strings = typeof en;

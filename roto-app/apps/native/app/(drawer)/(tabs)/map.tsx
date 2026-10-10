@@ -671,8 +671,11 @@ export default function RideMap() {
       <MotoMap>
         <Camera center={COLOMBO} zoom={12} />
         <GeoJSONSource id="pois" data={poisGeo}>
-          <Layer id="poi-dots" source="pois" type="circle" paint={{ "circle-radius": 7, "circle-color": ROTO.parchment, "circle-stroke-color": ROTO.signal, "circle-stroke-width": 2 }} />
-          <Layer id="poi-labels" source="pois" type="symbol" layout={{ "text-field": ["get", "name"], "text-size": 11, "text-offset": [0, 1.2] }} />
+          {/* ponytail: the offline pack holds every OSM POI in the viewport, so drawing them all at
+              the default zoom buried the map under thousands of rings. Gate them by zoom instead of
+              ranking them, which needs no new sync data. */}
+          <Layer id="poi-dots" source="pois" type="circle" minzoom={13} paint={{ "circle-radius": 5, "circle-color": ROTO.parchment, "circle-stroke-color": ROTO.signal, "circle-stroke-width": 1.5 }} />
+          <Layer id="poi-labels" source="pois" type="symbol" minzoom={15} layout={{ "text-field": ["get", "name"], "text-size": 11, "text-offset": [0, 1.2] }} />
         </GeoJSONSource>
         <GeoJSONSource id="members" data={membersGeo}>
           <Layer id="member-dots" source="members" type="circle" paint={{ "circle-radius": 8, "circle-color": ROTO.live }} />
@@ -693,7 +696,7 @@ export default function RideMap() {
         keyboardShouldPersistTaps="handled"
       >
         <Tabs value={lang} onValueChange={(v) => void setLang(v as Lang)} className="self-center">
-          <Tabs.List accessibilityLabel="Language">
+          <Tabs.List accessibilityLabel={t.languageField}>
             <Tabs.Indicator />
             {LANGS.map((l) => (
               <Tabs.Trigger key={l.code} value={l.code}>
@@ -802,7 +805,10 @@ export default function RideMap() {
                 className="flex-1 self-start"
               >
                 <Chip.Label style={{ color: ROTO.white }} className="font-extrabold">
-                  {`LIVE ${groupCode} (${memberFeatures.length})`}
+                  {interpolate(t.liveGroupBadge, {
+                    code: groupCode ?? "",
+                    count: memberFeatures.length,
+                  })}
                 </Chip.Label>
               </Chip>
               <Button variant="danger-soft" onPress={() => void leave()} isDisabled={busy !== null} accessibilityLabel={t.leaveGroup}>

@@ -2,7 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useThemeColor } from "heroui-native";
 
+import { useLang } from "@/lib/i18n";
+
 export default function TabLayout() {
+  // ponytail: tab titles must come from `t` or the bar stays English in si/ta — the drawer layout
+  // does this correctly, the tab bar did not, and only a screenshot in Tamil caught it.
+  const { t } = useLang();
   const themeColorForeground = useThemeColor("foreground");
   const themeColorBackground = useThemeColor("background");
 
@@ -26,21 +31,21 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: t.home,
           tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="map"
         options={{
-          title: "Ride",
+          title: t.sectionRide,
           tabBarIcon: ({ color, size }) => <Ionicons name="bicycle" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="two"
         options={{
-          title: "Rides",
+          title: t.ridesTab,
           tabBarIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} />,
         }}
       />

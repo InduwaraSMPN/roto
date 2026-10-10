@@ -217,7 +217,7 @@ export default function SafetyContacts() {
                 </ListGroup.ItemContent>
                 <ListGroup.ItemSuffix>
                   <View className="flex-row items-center gap-1">
-                    <Button size="sm" variant="ghost" isDisabled={busy || i === 0} onPress={() => void move(i, -1)} accessibilityLabel="up">
+                    <Button size="sm" variant="ghost" isDisabled={busy || i === 0} onPress={() => void move(i, -1)} accessibilityLabel={t.moveUp}>
                       <StyledIonicons name="chevron-up" size={16} className="text-foreground" />
                     </Button>
                     <Button
@@ -225,7 +225,7 @@ export default function SafetyContacts() {
                       variant="ghost"
                       isDisabled={busy || i === contacts.length - 1}
                       onPress={() => void move(i, 1)}
-                      accessibilityLabel="down"
+                      accessibilityLabel={t.moveDown}
                     >
                       <StyledIonicons name="chevron-down" size={16} className="text-foreground" />
                     </Button>
@@ -270,7 +270,7 @@ export default function SafetyContacts() {
           <Input
             value={form.email}
             onChangeText={(v) => setForm((f) => ({ ...f, email: v }))}
-            placeholder="email@example.com"
+            placeholder={t.emailPlaceholder}
             keyboardType="email-address"
             autoCapitalize="none"
           />

@@ -50,6 +50,17 @@ export const en = {
   signInSuccess: "Signed in successfully",
   signUpFailed: "Failed to sign up",
   signUpSuccess: "Account created successfully",
+  // Auth validation + placeholders. lib/auth-schemas.ts sits at module scope (stable identity for
+  // @tanstack/react-form), so it cannot close over `t` — it emits these ids as messages and the
+  // screens translate them via `isAuthMessageId`. Anything else is a server message, passed through.
+  emailRequired: "Email is required",
+  emailInvalid: "Enter a valid email address",
+  passwordRequired: "Password is required",
+  passwordMin: "Use at least 8 characters",
+  nameRequired: "Name is required",
+  nameMin: "Name must be at least 2 characters",
+  emailPlaceholder: "email@example.com",
+  namePlaceholder: "John Doe",
 
   // Ride tab: shuffle, group leave, SOS contacts line, voice download prompt
   shuffle: "Shuffle",
@@ -116,6 +127,20 @@ export const en = {
   // Local DB migration gate (app/_layout.tsx)
   dbMigrating: "Setting up local storage…",
   dbMigrationError: "Local database failed to start",
+
+  // Live group badge (app/(drawer)/(tabs)/map.tsx) — "LIVE" stays as-is, like liveStatus.
+  liveGroupBadge: "LIVE {code} ({count})",
+
+  // Accessibility labels for icon-only controls
+  moveUp: "Move up",
+  moveDown: "Move down",
+  sections: "Sections",
+
+  // Not-found screen (app/+not-found.tsx)
+  notFoundTitle: "Not Found",
+  pageNotFound: "Page Not Found",
+  pageNotFoundBody: "The page you're looking for doesn't exist.",
+  goHome: "Go Home",
 };
 
 export type NativeStrings = typeof en;
@@ -160,6 +185,14 @@ const si: NativeStrings = {
   signInSuccess: "සාර්ථකව ලොග් විය",
   signUpFailed: "ගිණුම සෑදීම අසාර්ථකයි",
   signUpSuccess: "ගිණුම සාර්ථකව සෑදිණි",
+  emailRequired: "විද්‍යුත් තැපෑල අවශ්‍යයි",
+  emailInvalid: "වලංගු විද්‍යුත් තැපැල් ලිපිනයක් ඇතුළත් කරන්න",
+  passwordRequired: "මුරපදය අවශ්‍යයි",
+  passwordMin: "අවම වශයෙන් අක්ෂර 8ක් භාවිතා කරන්න",
+  nameRequired: "නම අවශ්‍යයි",
+  nameMin: "නම අවම වශයෙන් අක්ෂර 2ක් විය යුතුය",
+  emailPlaceholder: "email@example.com",
+  namePlaceholder: "කමල් පෙරේරා",
 
   shuffle: "මාරු කරන්න",
   leaveGroup: "ඉවත් වන්න",
@@ -217,6 +250,16 @@ const si: NativeStrings = {
 
   dbMigrating: "දේශීය ගබඩාව සකසමින්…",
   dbMigrationError: "දේශීය දත්ත ගබඩාව ආරම්භ වීමට අසමත් විය",
+
+  liveGroupBadge: "LIVE {code} ({count})",
+  moveUp: "ඉහළට ගෙනයන්න",
+  moveDown: "පහළට ගෙනයන්න",
+  sections: "කොටස්",
+
+  notFoundTitle: "හමු නොවිණි",
+  pageNotFound: "පිටුව හමු නොවිණි",
+  pageNotFoundBody: "ඔබ සොයන පිටුව නොපවතී.",
+  goHome: "මුල් පිටුවට",
 };
 
 const ta: NativeStrings = {
@@ -259,6 +302,14 @@ const ta: NativeStrings = {
   signInSuccess: "வெற்றிகரமாக உள்நுழைந்தீர்கள்",
   signUpFailed: "கணக்கை உருவாக்க முடியவில்லை",
   signUpSuccess: "கணக்கு வெற்றிகரமாக உருவாக்கப்பட்டது",
+  emailRequired: "மின்னஞ்சல் தேவை",
+  emailInvalid: "சரியான மின்னஞ்சல் முகவரியை உள்ளிடவும்",
+  passwordRequired: "கடவுச்சொல் தேவை",
+  passwordMin: "குறைந்தது 8 எழுத்துகளைப் பயன்படுத்தவும்",
+  nameRequired: "பெயர் தேவை",
+  nameMin: "பெயர் குறைந்தது 2 எழுத்துகள் இருக்க வேண்டும்",
+  emailPlaceholder: "email@example.com",
+  namePlaceholder: "கமல் பெரேரா",
 
   shuffle: "மாற்று",
   leaveGroup: "வெளியேறு",
@@ -318,6 +369,16 @@ const ta: NativeStrings = {
 
   dbMigrating: "உள்ளக சேமிப்பகத்தை அமைக்கிறது…",
   dbMigrationError: "உள்ளக தரவுத்தளம் தொடங்கத் தவறியது",
+
+  liveGroupBadge: "LIVE {code} ({count})",
+  moveUp: "மேலே நகர்த்து",
+  moveDown: "கீழே நகர்த்து",
+  sections: "பிரிவுகள்",
+
+  notFoundTitle: "கண்டுபிடிக்கப்படவில்லை",
+  pageNotFound: "பக்கம் கண்டுபிடிக்கப்படவில்லை",
+  pageNotFoundBody: "நீங்கள் தேடும் பக்கம் இல்லை.",
+  goHome: "முகப்புக்குச் செல்",
 };
 
 export const NATIVE_STR: Record<"en" | "si" | "ta", NativeStrings> = { en, si, ta };

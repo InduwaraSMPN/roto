@@ -4,18 +4,20 @@ import { Link } from "expo-router";
 import { Text, View } from "react-native";
 
 import { Container } from "@/components/container";
+import { useLang } from "@/lib/i18n";
 import { ROTO } from "@/lib/roto-theme";
 
 export default function Home() {
+  const { t } = useLang();
+
   return (
     <Container className="p-6">
       <View className="py-2">
         <Text className="text-2xl font-extrabold tracking-tight text-foreground">
-          Start here
+          {t.startHere}
         </Text>
         <Text className="mt-1 text-muted">
-          The Ride tab plans and records. The Rides tab holds challenges, group
-          rides, and privacy zones.
+          {t.startHereSub}
         </Text>
       </View>
 
@@ -26,13 +28,13 @@ export default function Home() {
         >
           <Ionicons name="bicycle" size={32} color={ROTO.signalInk} />
         </View>
-        <Card.Title className="mb-1 text-xl">Ready to ride?</Card.Title>
+        <Card.Title className="mb-1 text-xl">{t.readyToRide}</Card.Title>
         <Card.Description className="mb-5 text-center">
-          Plan a curvy loop, download the offline pack, then hit START RIDE.
+          {t.readyToRideSub}
         </Card.Description>
         <Link href="/(drawer)/(tabs)/map" asChild>
           <Button className="self-stretch">
-            <Button.Label>Open the Ride tab</Button.Label>
+            <Button.Label>{t.openRideTab}</Button.Label>
           </Button>
         </Link>
       </Card>

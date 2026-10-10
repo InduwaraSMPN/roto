@@ -11,16 +11,11 @@ import {
 } from "heroui-native";
 import { useRef } from "react";
 import { Text, TextInput, View } from "react-native";
-import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
+import { isAuthMessageId, signUpSchema } from "@/lib/auth-schemas";
+import { useLang } from "@/lib/i18n";
 import { queryClient } from "@/utils/trpc";
-
-const signUpSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").min(2, "Name must be at least 2 characters"),
-  email: z.string().trim().min(1, "Email is required").email("Enter a valid email address"),
-  password: z.string().min(1, "Password is required").min(8, "Use at least 8 characters"),
-});
 
 function getErrorMessage(error: unknown): string | null {
   if (!error) return null;
@@ -50,6 +45,7 @@ function getErrorMessage(error: unknown): string | null {
 }
 
 export function SignUp() {
+  const { t } = useLang();
   const emailInputRef = useRef<TextInput>(null);
   const passwordInputRef = useRef<TextInput>(null);
   const { toast } = useToast();
@@ -74,14 +70,14 @@ export function SignUp() {
           onError(error) {
             toast.show({
               variant: "danger",
-              label: error.error?.message || "Failed to sign up",
+              label: error.error?.message || t.signUpFailed,
             });
           },
           onSuccess() {
             formApi.reset();
             toast.show({
               variant: "success",
-              label: "Account created successfully",
+              label: t.signUpSuccess,
             });
             queryClient.refetchQueries();
           },
@@ -92,7 +88,7 @@ export function SignUp() {
 
   return (
     <Surface variant="secondary" className="p-4 rounded-lg">
-      <Text className="text-foreground font-medium mb-4">Create Account</Text>
+      <Text className="text-foreground font-medium mb-4">{t.createAccount}</Text>
 
       <form.Subscribe
         selector={(state) => ({
@@ -101,7 +97,10 @@ export function SignUp() {
         })}
       >
         {({ isSubmitting, validationError }) => {
-          const formError = validationError;
+          // The schema emits message ids (see lib/auth-schemas.ts) because it cannot close over `t`;
+          // anything the map does not recognise is a server message and is shown as-is.
+          const formError =
+            validationError && isAuthMessageId(validationError) ? t[validationError] : validationError;
 
           return (
             <>
@@ -113,12 +112,12 @@ export function SignUp() {
                 <form.Field name="name">
                   {(field) => (
                     <TextField>
-                      <Label>Name</Label>
+                      <Label>{t.fullName}</Label>
                       <Input
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChangeText={field.handleChange}
-                        placeholder="John Doe"
+                        placeholder={t.namePlaceholder}
                         autoComplete="name"
                         textContentType="name"
                         returnKeyType="next"
@@ -134,13 +133,13 @@ export function SignUp() {
                 <form.Field name="email">
                   {(field) => (
                     <TextField>
-                      <Label>Email</Label>
+                      <Label>{t.email}</Label>
                       <Input
                         ref={emailInputRef}
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChangeText={field.handleChange}
-                        placeholder="email@example.com"
+                        placeholder={t.emailPlaceholder}
                         keyboardType="email-address"
                         autoCapitalize="none"
                         autoComplete="email"
@@ -158,7 +157,7 @@ export function SignUp() {
                 <form.Field name="password">
                   {(field) => (
                     <TextField>
-                      <Label>Password</Label>
+                      <Label>{t.password}</Label>
                       <Input
                         ref={passwordInputRef}
                         value={field.state.value}
@@ -179,7 +178,7 @@ export function SignUp() {
                   {isSubmitting ? (
                     <Spinner size="sm" color="default" />
                   ) : (
-                    <Button.Label>Create Account</Button.Label>
+                    <Button.Label>{t.createAccount}</Button.Label>
                   )}
                 </Button>
               </View>

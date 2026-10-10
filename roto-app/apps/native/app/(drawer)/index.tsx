@@ -13,7 +13,7 @@ import { ROTO } from "@/lib/roto-theme";
 import { queryClient, trpc } from "@/utils/trpc";
 
 export default function Home() {
-  const { lang, setLang } = useLang();
+  const { lang, setLang, t } = useLang();
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
   const curated = useQuery(trpc.curated.list.queryOptions({}));
   const leaderboard = useQuery(
@@ -34,6 +34,23 @@ export default function Home() {
   const topRoutes = (curated.data?.items ?? []).slice(0, 3);
   const topRiders = (leaderboard.data ?? []).slice(0, 3);
 
+  // The DB stores region/difficulty as slugs and route names in en/si/ta columns; English is the
+  // fallback so an unseeded or user-submitted route still renders something readable.
+  const routeName = (r: { nameEn: string; nameSi?: string | null; nameTa?: string | null }) =>
+    (lang === "si" ? r.nameSi : lang === "ta" ? r.nameTa : null) || r.nameEn;
+  const difficultyLabel = (d: string) =>
+    d === "easy" ? t.difficultyEasy : d === "hard" ? t.difficultyHard : t.difficultyMedium;
+  const regionLabel = (r: string) =>
+    ({
+      "south-coast": t.regionSouthCoast,
+      "south-inland": t.regionSouthInland,
+      "hill-country": t.regionHillCountry,
+      "cultural-triangle": t.regionCulturalTriangle,
+      "east-coast": t.regionEastCoast,
+      north: t.regionNorth,
+      knuckles: t.regionKnuckles,
+    })[r] ?? r;
+
   return (
     <Container className="p-6">
       <View className="py-4">
@@ -48,10 +65,10 @@ export default function Home() {
           />
         </View>
         <Text className="mt-1 text-muted">
-          Free offline-first rides for Sri Lanka — no subscription, no tracking.
+          {t.homeTagline}
         </Text>
         <Tabs value={lang} onValueChange={(v) => void setLang(v as Lang)} className="mt-3 self-start">
-          <Tabs.List accessibilityLabel="Language">
+          <Tabs.List accessibilityLabel={t.languageField}>
             <Tabs.Indicator />
             {LANGS.map((l) => (
               <Tabs.Trigger key={l.code} value={l.code}>
@@ -65,13 +82,13 @@ export default function Home() {
       {session?.user ? (
         <Card variant="secondary" className="mb-4 p-4">
           <Text className="text-foreground text-base mb-1">
-            Welcome back, <Text className="font-bold">{session.user.name}</Text>
+            {t.welcomeBack}, <Text className="font-bold">{session.user.name}</Text>
           </Text>
           <Text className="text-muted text-sm mb-4">{session.user.email}</Text>
           <View className="flex-row gap-2">
             <Link href="/(drawer)/(tabs)/map" asChild>
               <Button className="flex-1">
-                <Button.Label>Plan a ride</Button.Label>
+                <Button.Label>{t.planRide}</Button.Label>
               </Button>
             </Link>
             <Button
@@ -81,25 +98,25 @@ export default function Home() {
                 queryClient.invalidateQueries();
               }}
             >
-              <Button.Label>Sign Out</Button.Label>
+              <Button.Label>{t.signOut}</Button.Label>
             </Button>
           </View>
         </Card>
       ) : (
         <Link href="/(drawer)/(tabs)/map" asChild>
           <Button size="lg" className="mb-4">
-            <Button.Label>Plan a ride — no account needed</Button.Label>
+            <Button.Label>{t.planNoAccount}</Button.Label>
           </Button>
         </Link>
       )}
 
       <Card variant="secondary" className="p-4">
-        <Card.Title className="mb-2">Proven LK routes</Card.Title>
+        <Card.Title className="mb-2">{t.provenRoutes}</Card.Title>
         {curated.isLoading ? (
-          <Card.Description>Loading routes…</Card.Description>
+          <Card.Description>{t.loadingRoutes}</Card.Description>
         ) : topRoutes.length === 0 ? (
           <Card.Description>
-            Routes are unavailable. Open the Ride tab and draw a 60 km loop.
+            {t.routesUnavailable}
           </Card.Description>
         ) : (
           topRoutes.map((route) => (
@@ -109,10 +126,10 @@ export default function Home() {
             >
               <View className="mr-3 flex-1">
                 <Text className="text-foreground font-semibold" numberOfLines={1}>
-                  {route.nameEn}
+                  {routeName(route)}
                 </Text>
-                <Text className="text-muted text-xs capitalize">
-                  {route.region} · {route.difficulty}
+                <Text className="text-muted text-xs">
+                  {regionLabel(route.region)} · {difficultyLabel(route.difficulty)}
                 </Text>
               </View>
               <Text className="text-foreground font-extrabold tabular-nums">
@@ -125,14 +142,14 @@ export default function Home() {
 
       <Card variant="secondary" className="mt-4 p-4">
         <View className="flex-row items-center justify-between mb-2">
-          <Card.Title>Riding this month</Card.Title>
-          <Text className="text-muted text-xs font-semibold">Target 500 km</Text>
+          <Card.Title>{t.ridingThisMonth}</Card.Title>
+          <Text className="text-muted text-xs font-semibold">{t.targetKm}</Text>
         </View>
         {leaderboard.isLoading ? (
-          <Card.Description>Checking the pack…</Card.Description>
+          <Card.Description>{t.checkingPack}</Card.Description>
         ) : topRiders.length === 0 ? (
           <Card.Description>
-            No rides logged yet — record a ride and take the top spot.
+            {t.noRidesYet}
           </Card.Description>
         ) : (
           topRiders.map((rider, index) => (
@@ -153,9 +170,9 @@ export default function Home() {
 
       <Card variant="secondary" className="mt-4 p-4">
         <View className="flex-row items-center justify-between mb-3">
-          <Card.Title>Service status</Card.Title>
+          <Card.Title>{t.serviceStatus}</Card.Title>
           <Chip variant="secondary" color={isConnected ? "success" : "danger"} size="sm">
-            <Chip.Label>{isConnected ? "LIVE" : "OFFLINE"}</Chip.Label>
+            <Chip.Label>{isConnected ? t.liveStatus : t.offlineStatus}</Chip.Label>
           </Chip>
         </View>
 
@@ -164,13 +181,13 @@ export default function Home() {
             className={`w-3 h-3 rounded-full mr-3 ${isConnected ? "bg-success" : "bg-muted"}`}
           />
           <View className="flex-1">
-            <Text className="text-foreground font-medium mb-1">Roto API</Text>
+            <Text className="text-foreground font-medium mb-1">{t.rotoApi}</Text>
             <Card.Description>
               {isLoading
-                ? "Checking connection..."
+                ? t.checkingConnection
                 : isConnected
-                  ? "Connected — routes and community are live"
-                  : "Offline — offline packs and recording still work"}
+                  ? t.apiConnected
+                  : t.apiOffline}
             </Card.Description>
           </View>
           {isLoading && <Ionicons name="hourglass-outline" size={20} color={mutedColor} />}

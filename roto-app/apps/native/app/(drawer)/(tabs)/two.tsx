@@ -197,7 +197,7 @@ export default function Community() {
       </View>
 
       <Tabs value={seg} onValueChange={(v) => setSeg(v as Segment)} className="self-start">
-        <Tabs.List accessibilityLabel="Sections">
+        <Tabs.List accessibilityLabel={t.sections}>
           <Tabs.Indicator />
           {SEGMENTS.map((s) => (
             <Tabs.Trigger key={s} value={s}>
