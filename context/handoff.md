@@ -10,28 +10,36 @@ A self-contained prompt for starting a fresh session on this is in `context/cont
 ## Completion at a glance
 
 Phases 0–5 have code written, except the deferred PWA (D10). "Code" means written and type-checking;
-"Runtime verified" means the named flow was actually exercised. The S24 has rendered the home screen,
-but the device checklist has not been completed.
+"Runtime verified" means the named flow was actually exercised somewhere, by me or before this session.
 
 | # | Phase | Scope | Code | Runtime verified | Blocker / what is left |
 |---|---|---|---|---|---|
 | 0 | Foundation | core pkg, routing rewrite, schema integrity 0006, Valhalla infra, shared lang, local DB, SOS contacts UI, B1–B16 | 100% | yes | — |
-| 1 | Safety & nav | safety trips/trigger, SOS flow, background recording, nav engine, live trip page | ~95% | server yes; S24 home only | Test SOS countdown/delivery, crash detection, navigation and screen-off recording on the S24; tune thresholds before use |
-| 2 | Planning & LK data | planner rebuild, imports, share, POI/hazard/closure/holiday/fuel, weather, speed, surface | ~95% | yes (web + API) | tiles D7 host, D11 limits |
-| 3 | Tracking & community | ride detail, photos, replay, heatmap, groups, feed, clubs, challenges, profiles, moderation, GDPR, curvature layer | ~90% | web + API; native flows untested | Social flows need real accounts; test ride capture and sync on phone |
-| 4 | New-rider layer | 5 learner modules + quizzes, dealers, garage + reminders, Riyasewana, guides, web locale routing | ~90% | web; native flows untested | Native-speaker si/ta review; D4 next-intl; phone checks |
-| 5 | Platform | Android Auto, media keys, PWA | ~70% | APK boots on S24; Auto/remotes untested | PWA skipped (D10 open); test Auto with head unit and media keys |
-| — | Beyond items | trilingual, LK road reality, garage, SOS channels, community routes | ~85% | partial | Poya from Meeus, not Calendarific; hardware and language checks remain |
+| 1 | Safety & nav | safety trips/trigger, SOS flow, background recording, nav engine, live trip page | ~95% | server + emulator boot | Crash thresholds, SOS countdown and delivery, screen-off recording: **untested anywhere** |
+| 2 | Planning & LK data | planner rebuild, imports, share, POI/hazard/closure/holiday/fuel, weather, speed, surface | ~95% | web + API + emulator map | tiles D7 host, D11 limits |
+| 3 | Tracking & community | ride detail, photos, replay, heatmap, groups, feed, clubs, challenges, profiles, moderation, GDPR, curvature layer | ~90% | web + API | Ride capture/sync untested on a phone; social flows need real accounts |
+| 4 | New-rider layer | 5 learner modules + quizzes, dealers, garage + reminders, Riyasewana, guides, web locale routing | ~90% | web | Native-speaker si/ta review (hard gate); D4 next-intl |
+| 5 | Platform | Android Auto, media keys, PWA | ~70% | Kotlin compiles; APK boots | Auto and media keys never run; PWA skipped (D10 open) |
+| — | Beyond items | trilingual, LK road reality, garage, SOS channels, community routes | ~85% | partial | Poya from Meeus, not Calendarific |
 
-**Gates, all green:** `check-types` 8/8 · `test` 7/7 (core 57, api 35) · `tiles/scripts/smoke.mjs` 8/8 · Valhalla avoids expressways · migrations 0006–0019 applied (44 tables) · 9 public API endpoints return 200 · 15 web routes serve 200 · PDF export renders en/si/ta · APK builds and installs.
+**Gates, all green:** `check-types` 8/8 · `test` 7/7 (core 57, api 35) · `tiles/scripts/smoke.mjs` 8/8 ·
+Valhalla avoids expressways · migrations 0006–0019 applied (44 tables) · 9 public API endpoints return 200 ·
+15 web routes serve 200 · PDF export renders en/si/ta · release APK builds, installs and runs.
 
-**Hard truth about verification:** the native app renders the home screen on the S24 Ultra after fixing
-the Varlock startup error. The emulator ANR did not reproduce there. Crash thresholds, SOS countdown,
-Android Auto, media keys, offline maps and background recording remain unverified on hardware. The first
-sync attempt failed before USB port forwarding was enabled; its later result is unverified.
+**What the emulator pass proved (2026-10-06).** A release APK (157 MB, embedded bundle, no Metro) on
+`emulator-5554` / Android 16: boots with no ANR or crash, `ReactNativeJS: Running "main"`, home screen
+renders in en/si/ta, API reports **LIVE** with three real routes and distances, `sync.delta` returns 200,
+and the map renders real OSM/Martin tiles with attribution.
 
-**Overall:** most planned code is written, but the release gate is still open. A percentage would
-hide the untested safety and ride flows; complete the device checklist and native-speaker review first.
+**Correcting two earlier claims in this file.** (1) It previously said the S24 Ultra had rendered the home
+screen and that "the emulator ANR did not reproduce there". No physical device is attached right now
+(`adb devices` shows only `emulator-5554`), so that claim could not be re-verified — treat it as unproven
+rather than done. (2) It previously said the work was uncommitted. It is committed; `git log` shows the
+feature work across 8 commits, and only this session's edits are uncommitted.
+
+**Overall:** most planned code is written and the app demonstrably runs. The release gate is still open,
+and it is open on things no emulator can settle: crash thresholds, SOS delivery, background recording,
+Android Auto, media keys, and the si/ta language review.
 
 ## Goal
 
@@ -140,17 +148,33 @@ Build is complete across Phases 0–5 (D17: one device-test pass at the end, not
 - **varlock on Windows:** the second patch now spawns `node node_modules/varlock/bin/cli.js` instead of the `varlock.cmd` shim. The old quote-only fix still died with `Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)`, which killed the server, the web app and drizzle-kit. Documented in AGENTS.md along with the `subst R:` workaround for `.cmd` shims and `next typegen`.
 - `next typegen` only writes `.next/types` when `next dev` is not running; while dev is up, delete `.next/types` before typechecking.
 
-### Emulator attempt (partial — read this before trusting any "it works" claim)
-Ran the AVD `Medium_Phone_API_36.1` (Android 16, software GPU). What is proven:
-- The 328 MB debug APK installs cleanly (`adb install -r` → Success).
-- The JS bundle builds and every module resolves (19.6 MB, ~3400 modules) — this is what proved the Metro fix.
-- The app process launches and reaches `lk.roto.app/.MainActivity`.
+### Emulator pass (2026-09-28 — the earlier ANR is explained and resolved)
+Ran the AVD `Medium_Phone_API_36.1` (Android 16, software GPU) with the full local stack: Docker compose
+(Postgres :54322, martin :3005, Valhalla :8002), `tiles/serve-style.mjs` (:3006), server (:3010).
+A **release** APK boots with no ANR, logs `ReactNativeJS: Running "main"`, reports API **LIVE**, returns
+`sync.delta` 200, and renders real OSM/Martin tiles with attribution.
 
-At the time, the app ANR'd during startup on this emulator twice. The S24 Ultra check above now proves the home screen renders on hardware; the emulator-specific cause remains undiagnosed.
+The earlier "the app ANRs and never renders" conclusion was **wrong about the cause** — see the dev-client
+note in the bug list above. Reproduce:
 
-The dev-client flow that works, for reference:
 ```
-cd roto-app/apps/native
+cd roto-app
+docker compose -f tiles\docker-compose.yml up -d
+node tiles\serve-style.mjs                                  # must bind 0.0.0.0
+cd apps\server; npx tsx src/index.ts                         # :3010
+cd ..\..; scripts\gradlew-roto.bat :app:assembleRelease     # bakes EXPO_PUBLIC_* from the shell env
+adb install -r apps\native\android\app\build\outputs\apk\release\app-release.apk
+adb shell am start -n lk.roto.app/.MainActivity
+```
+
+For the emulator set `EXPO_PUBLIC_SERVER_URL=http://10.0.2.2:3010` and
+`EXPO_PUBLIC_TILE_URL=http://10.0.2.2:3006/style.json` **in the shell before the gradle call** — varlock
+prefers process env over `.env`, so the committed config need not change. A physical phone needs your LAN
+IP, which must also be added to `CLEAR_TEXT_HOSTS` in `apps/native/app.plugin.js`.
+
+The dev-client flow still works for fast iteration, from the real `D:\` path:
+```
+cd roto-app\apps\native
 npx expo start --port 8081 --clear            # must run from the real D:\ path
 adb shell am start -a android.intent.action.VIEW -d "roto-app://expo-development-client/?url=http%3A%2F%2F10.0.2.2%3A8081"
 ```
@@ -163,13 +187,29 @@ adb shell am start -a android.intent.action.VIEW -d "roto-app://expo-development
 - All si/ta copy still needs native-speaker review before any store release.
 
 ### Bugs found and fixed in the last pass (all were live, not theoretical)
-- **Metro could not resolve any `@roto-app/core` subpath import at runtime.** `tsc` passed because it follows the same `exports` map, but the bundle died with `Unable to resolve module @roto-app/core/learn` and the app never started. Two causes: the npm workspace junctions in the root `node_modules` pointed at `R:\` (they had been created while the subst drive was mounted), and `apps/native/metro.config.js` had no `watchFolders` / `unstable_enableSymlinks`, so Metro refused to follow a symlink out of the app's projectRoot. Fixed both; the bundle now builds (19.6 MB, ~3400 modules). **This is the bug to check first if a native change "type-checks but won't run".**
+- **The language switcher did nothing on the Home screen.** The pill moved, `lang` updated, and every string stayed English. `app/(drawer)/index.tsx` destructured `const { lang, setLang } = useLang()` and never took `t`, and the whole screen was hardcoded English literals — so the app shipped an English-only first screen behind a language picker, which is the exact failure the trilingual invariant exists to prevent. Added 18 Home keys (`homeTagline`, `planNoAccount`, `provenRoutes`, `serviceStatus`, `apiConnected`, …) to `en/si/ta` and wired the screen to `t`. The `Strings` type in `packages/core/src/i18n/en.ts` made this safe: adding a key to `en.ts` fails typecheck until `si.ts` and `ta.ts` supply it, so trilingual completeness is compiler-enforced rather than a review item. Verified on the emulator in all three languages.
+- **The same defect was in four more places**, found by grepping for literal text in JSX after fixing the first: the Home *tab* screen (`app/(drawer)/(tabs)/index.tsx` — entire body English), the **tab-bar titles** (`(tabs)/_layout.tsx` hardcoded "Home"/"Ride"/"Rides", so the bottom bar stayed English in every language even though the drawer above it translated correctly), and both auth forms (`components/sign-in.tsx`, `components/sign-up.tsx` — "Sign In"/"Create Account"/"Email"/"Password"/"Name"). All wired to `t` and verified in Tamil on the emulator. **Lesson: fixing one instance of this bug proves nothing about the others — grep for `>Capitalised text<` across `apps/native` rather than assuming a screen is covered.**
+- **Some existing si/ta values were left in English** — `home: "Home"` (which is the drawer header on every screen), plus `import`, `code` and `add`. Translated those too.
+- **The seeded curated routes were stale, English-only rows.** `curated_routes` already had `name_si`/`name_ta` columns and `seed/curated.lk.ts` already carried 12 LK classics with si/ta names, but the DB held only **5** rows from an older seed whose names used `→` where the current file uses `–`. So the Home card could never show a translated name: the columns were NULL *and* the rows didn't correspond to the current seed. Deleted the 5 generated rows (verified first: `submitted_by`/`rating_count` all 0, every row `verified='generated'`), re-ran `packages/db/src/seed/curated.ts` against the local Valhalla to load all 12 with si/ta names, then made Home pick the name by `lang` and localise `difficulty`/`region` (slugs → translated labels, English fallback). **Lesson: `seed/curated.ts` bails out if any row exists, so it can never refresh stale data — delete the table first. Matching seed rows back to the source by display name is also unsafe, since names changed between versions; that is why a name-keyed backfill silently matched nothing.**
+- **The dev client ANR was not an app bug — it was the bundle.** The debug/dev-client build ANRs on the emulator because it must fetch and evaluate a 19.6 MB JS bundle over the emulator's loopback, which blows the startup window. A **release** APK embeds the bundle and starts in seconds with no ANR. Do not chase an app-level hang on the basis of a dev-client ANR; build `:app:assembleRelease` to test startup. `release` already signs with the debug keystore in `app/build.gradle`, so it builds with no extra setup.
+- **Release builds could not reach any local server.** `targetSdkVersion="36"` blocks cleartext HTTP by default, and the release manifest had no allowance, so `EXPO_PUBLIC_SERVER_URL` / `EXPO_PUBLIC_TILE_URL` over `http://10.0.2.2` silently failed — the app rendered but every card stayed "Checking connection…". Debug builds allow cleartext, which is why only release was affected. Fixed with `apps/native/app.plugin.js`, a config plugin that writes a network security config permitting cleartext **only** for `10.0.2.2`/`localhost`/`127.0.0.1` while leaving `base-config` denied. It is a plugin rather than a hand-edited file because `android/` is regenerated by `prebuild --clean`. Add your laptop's LAN IP to `CLEAR_TEXT_HOSTS` to smoke-test a release build from a physical phone.
+- **The map was buried under thousands of POI rings.** `map.tsx` drew *every* synced OSM POI as a 7 px circle with a signal-yellow stroke at all zooms, so at the default `zoom={12}` the map was a solid mat of yellow donuts and the basemap was invisible. Gated the layers by zoom (`poi-dots` minzoom 13, radius 7→5; `poi-labels` minzoom 15). Only found by screenshotting the running app — nothing in the type-checker or tests would ever have caught it. Note this was initially misdiagnosed as the style's curvature layer; `minzoom: 20` on the curvature layers proved otherwise, and those values were reverted unchanged.
+- **Metro could not resolve any `@roto-app/core` subpath import at runtime.** `tsc` passed because it follows the same `exports` map, but the bundle died with `Unable to resolve module @roto-app/core/learn` and the app never started. Two causes: the npm workspace junctions in the root `node_modules` pointed at `R:\` (they had been created while the subst drive was mounted), and `apps/native/metro.config.js` had no `watchFolders` / `unstable_enableSymlinks`, so Metro refused to follow a symlink out of the app's projectRoot. Fixed both. **This is the bug to check first if a native change "type-checks but won't run".**
 - **`apps/native/.env.schema` had a broken validator.** `@type=string(matches="^(https?://|/(?!/))")` — varlock stringifies the function-valued attribute, so it reported `Value must start with "function startsWith()"` and refused to start Metro at all. Replaced with `@type=url(prependHttps=false)`.
-- **`EXPO_PUBLIC_TILE_URL` was unset**, so the map style fell back to the maplibre demo tiles. Now `http://localhost:3006/style.json` (the local style server) in `.env`, and `EXPO_PUBLIC_SERVER_URL` points at 3010 where the server actually listens.
+- **`EXPO_PUBLIC_TILE_URL` was unset**, so the map style fell back to the maplibre demo tiles. Now set, and `EXPO_PUBLIC_SERVER_URL` points at 3010 where the server actually listens.
+- `tiles/serve-style.mjs` must stay up for the map to work at all, and it must bind `0.0.0.0` — when it was only reachable via loopback the app failed with `Mbgl [Setup]: loading style failed: Failed to connect to /10.0.2.2:3006`.
 - `db.execute` with the node-postgres driver returns a `QueryResult` object, not an array. Every raw-SQL call site that indexed it directly got `undefined` and threw. Added `rowsOf()` in `apps/server/src/lib/rate-limit.ts` and used it in both the limiter store and the cron route.
 - The limiter and cron wrote to a quoted camelCase `"resetAt"` column, but migration 0018 generated snake_case `reset_at`. Every insert failed with Postgres `42703`, which is why `GET /cron/holidays` returned 500 instead of 503/401 and why the rate limiter 500'd on `/upload` and `/cron/*`. Verified fixed: 401 on a bad secret, `{"skipped":true,"reason":"no-api-key","year":2027}` with a good one.
 - `poi_cache` only stored `name_en`, so offline map labels would have been English-only — a trilingual-invariant violation. Added `name_si`/`name_ta` (drizzle migration `0003`) and mapped them in `lib/sync.ts`.
 - `expo-notifications` was installed but missing from `app.json`, so scheduled garage reminders were silently dropped across a reboot. Added the plugin plus `RECEIVE_BOOT_COMPLETED` and `SCHEDULE_EXACT_ALARM`; both confirmed in the merged manifest after prebuild.
+
+### Known gaps found by looking at the running app
+- The LIVE/OFFLINE status chip is a hardcoded English badge. Minor, and arguably correct as a status token, but it is untranslated.
+- **Auth form validation messages are English-only.** The zod schemas in `components/sign-in.tsx` and `sign-up.tsx` are declared at module scope, so their messages ("Email is required", "Use at least 8 characters") cannot see `t`. Moving them inside the component, or keying them off a message-id map, would fix it. Not done — it needs a small refactor rather than a string swap.
+- Martin tiles are served at **extensionless** URLs (`/curvature/11/1478/984`). Requesting `.pbf` returns 404 and looks exactly like a broken tile pipeline.
+- The `curated.list` region/difficulty labels are a lookup keyed on DB slugs. A new region slug will render
+  as its raw slug (e.g. `east-coast`) until a key is added — the fallback is intentional so nothing crashes,
+  but it is a spot to check when adding routes.
 
 ## Rules that bite
 
